@@ -120,7 +120,7 @@ const jsxBuilder = createI18n(['en', 'ja'] as const)
 
 ---
 
-### `.build(locale?)`
+### `.build(locale)`
 
 Builds the final messages object.
 
@@ -128,19 +128,15 @@ Builds the final messages object.
 const builder = createI18n(['en', 'ja'] as const)
   .add({ title: { en: 'Title', ja: 'タイトル' } });
 
-// With specific locale
 const enMessages = builder.build('en');
 const jaMessages = builder.build('ja');
-
-// Without locale — defaults to first locale in array
-const defaultMessages = builder.build(); // uses 'en'
 
 // All messages are called as functions
 console.log(enMessages.title()); // "Title"
 console.log(jaMessages.title()); // "タイトル"
 ```
 
-- **Argument `locale`**: optional; defaults to first locale in array
+- **Argument `locale`**: required
 - **Returns**: `{ [key]: () => R }` or `{ [key]: (ctx: C) => R }`
 - **Immutable**: `.build()` does not mutate the builder — you can generate multiple locales from one builder
 
@@ -148,7 +144,7 @@ console.log(jaMessages.title()); // "タイトル"
 
 ### `bindLocale(obj, locale)`
 
-Recursively traverses an object/array and calls `.build(locale)` on all `ChainBuilder` instances found. Used for the namespace pattern (split files).
+Recursively traverses an object/array and calls `.build(locale)` on all `ChainBuilder` instances found. Used for the namespace pattern (split files). Since `build()` requires a locale, `bindLocale` provides it at the point of use.
 
 ```ts
 import { bindLocale } from 'canopy-i18n';

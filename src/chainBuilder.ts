@@ -99,11 +99,9 @@ export class ChainBuilder<
       [K in keyof Messages]: Messages[K] extends I18nMessage<Ls, infer C, infer R> ? LocalizedMessage<Ls, C, R> : never;
     },
   >(
-    locale?: Ls[number],
+    locale: Ls[number],
   ): M {
-    const clonedMessages = locale !== undefined
-      ? this.deepCloneWithLocale(this.messages, locale)
-      : this.messages;
+    const clonedMessages = this.deepCloneWithLocale(this.messages, locale);
 
     const result: Record<string, any> = {};
 

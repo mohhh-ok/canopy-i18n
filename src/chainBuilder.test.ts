@@ -102,16 +102,6 @@ describe("ChainBuilder", () => {
     expect(messages.welcome({ name: "John" })).toBe("Welcome, John");
   });
 
-  it("build() without locale parameter uses default locale (first locale in array)", () => {
-    const messages = createI18n(LOCALES)
-      .add({
-        title: { ja: "タイトル", en: "Title" },
-      })
-      .build();
-
-    expect(messages.title()).toBe("タイトル");
-  });
-
   it("build(locale) does not mutate the builder instance", () => {
     const builder = createI18n(LOCALES)
       .add({

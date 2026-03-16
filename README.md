@@ -215,17 +215,13 @@ const builder = createI18n(['ja', 'en'] as const)
 
 
 
-#### `.build(locale?)`
+#### `.build(locale)`
 Builds the final messages object.
 
-- **locale**: (optional) `Locale` — If provided, sets this locale on all messages before returning. If omitted, uses the first locale in the locales array as default.
+- **locale**: `Locale` — Sets this locale on all messages before returning.
 - Returns: `Messages` — An object containing all defined messages
 
 ```ts
-// Build with default locale (first in array)
-const defaultMessages = builder.build();
-
-// Build with specific locale
 const englishMessages = builder.build('en');
 const japaneseMessages = builder.build('ja');
 ```
