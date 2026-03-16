@@ -1,6 +1,6 @@
 {
   "name": "canopy-i18n",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "The Type-Safe i18n library that your IDE will Love",
   "type": "module",
   "main": "dist/index.js",
