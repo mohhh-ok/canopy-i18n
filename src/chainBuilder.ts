@@ -3,7 +3,7 @@ import type { LocalizedMessage } from "./message.js";
 
 export class ChainBuilder<
   const Ls extends readonly string[],
-  Messages extends Record<string, I18nMessage<Ls, any, any>> = {},
+  Messages extends Record<string, I18nMessage<Ls, any>> = {},
 > {
   private readonly locales: Ls;
   private messages: Messages;
@@ -18,21 +18,20 @@ export class ChainBuilder<
 
   /**
    * 複数のメッセージを一度に追加
-   * 値の型は引数から自動推論される
    */
   add<
-    Entries extends Record<string, Record<Ls[number], any>>,
+    Entries extends Record<string, Record<Ls[number], string>>,
   >(
     entries: { [Key in keyof Entries]: Key extends keyof Messages ? never : Entries[Key] },
   ): ChainBuilder<
     Ls,
-    Messages & { [Key in keyof Entries]: I18nMessage<Ls, void, Entries[Key] extends Record<string, infer R> ? R : never> }
+    Messages & { [Key in keyof Entries]: I18nMessage<Ls, void> }
   > {
     const newMessages = { ...this.messages };
 
     for (const [key, data] of Object.entries(entries)) {
-      const msg = new I18nMessage<Ls, void, any>(this.locales, this.locales[0] as Ls[number]).setData(
-        data as Record<Ls[number], any>,
+      const msg = new I18nMessage<Ls, void>(this.locales, this.locales[0] as Ls[number]).setData(
+        data as any,
       );
       (newMessages as any)[key] = msg;
     }
@@ -44,18 +43,18 @@ export class ChainBuilder<
    * 関数指定版: 複数のテンプレート関数を一度に追加(型は統一)
    */
   addTemplates<C>(): <
-    Entries extends Record<string, (ctx: C) => Record<Ls[number], any>>,
+    Entries extends Record<string, (ctx: C) => Record<Ls[number], string>>,
   >(
     entries: { [Key in keyof Entries]: Key extends keyof Messages ? never : Entries[Key] },
   ) => ChainBuilder<
     Ls,
-    Messages & { [Key in keyof Entries]: I18nMessage<Ls, C, ReturnType<Entries[Key]> extends Record<string, infer R> ? R : never> }
+    Messages & { [Key in keyof Entries]: I18nMessage<Ls, C> }
   > {
-    return <Entries extends Record<string, (ctx: C) => Record<Ls[number], any>>>(
+    return <Entries extends Record<string, (ctx: C) => Record<Ls[number], string>>>(
       entries: { [Key in keyof Entries]: Key extends keyof Messages ? never : Entries[Key] },
     ): ChainBuilder<
       Ls,
-      Messages & { [Key in keyof Entries]: I18nMessage<Ls, C, ReturnType<Entries[Key]> extends Record<string, infer R> ? R : never> }
+      Messages & { [Key in keyof Entries]: I18nMessage<Ls, C> }
     > => {
       const newMessages = { ...this.messages };
 
@@ -64,7 +63,7 @@ export class ChainBuilder<
         for (const locale of this.locales) {
           localeData[locale] = (ctx: C) => (fn as (ctx: C) => Record<string, any>)(ctx)[locale];
         }
-        const msg = new I18nMessage<Ls, C, any>(this.locales, this.locales[0] as Ls[number]).setData(
+        const msg = new I18nMessage<Ls, C>(this.locales, this.locales[0] as Ls[number]).setData(
           localeData as Record<Ls[number], (ctx: C) => any>,
         );
         (newMessages as any)[key] = msg;
@@ -96,7 +95,7 @@ export class ChainBuilder<
 
   build<
     M = {
-      [K in keyof Messages]: Messages[K] extends I18nMessage<Ls, infer C, infer R> ? LocalizedMessage<Ls, C, R> : never;
+      [K in keyof Messages]: Messages[K] extends I18nMessage<Ls, infer C> ? LocalizedMessage<Ls, C> : never;
     },
   >(
     locale: Ls[number],
