@@ -2,9 +2,6 @@
 
 A tiny, type-safe i18n library for building localized messages with builder pattern and applying locales across nested data structures.
 
-![スクリーンショット](https://raw.githubusercontent.com/mohhh-ok/canopy-i18n/main/docs/images/hero.gif)
-
-
 ## Features
 - **AI-friendly**: Full type safety and single-file colocation give AI assistants complete context for accurate code generation.
 - **Type-safe**: Compile-time safety for locale keys with full TypeScript IntelliSense support.
