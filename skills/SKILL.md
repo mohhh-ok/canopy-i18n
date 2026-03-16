@@ -1,6 +1,6 @@
 ---
 name: canopy-i18n
-description: Use this skill when writing code that uses the canopy-i18n package — a type-safe, zero-dependency i18n library with a builder pattern API. Covers createI18n, add, addTemplates (curried), build, bindLocale, React integration, and common gotchas like required `as const` and the two-step curried call syntax.
+description: Use this skill when writing code that uses the canopy-i18n package — a type-safe, zero-dependency i18n library with a builder pattern API. Covers createI18n, add (static and template), build, bindLocale, React integration, and common gotchas like required `as const`.
 ---
 
 # canopy-i18n — AI Code Generation Reference
@@ -57,65 +57,39 @@ const builder = createI18n(['en', 'ja']);
 
 ---
 
-### `.add<R, K>(entries)`
+### `.add(entries)`
 
-Adds multiple static messages (string or custom type).
+Adds multiple messages at once. Each entry can be a static locale record or a template function.
 
 ```ts
-// Default (string type)
+// Static messages
 const builder = createI18n(['en', 'ja'] as const)
   .add({
     title: { en: 'Title', ja: 'タイトル' },
     greeting: { en: 'Hello', ja: 'こんにちは' },
   });
 
-// Custom return type (object)
-type MenuItem = { label: string; url: string };
-
-const menu = createI18n(['en', 'ja'] as const)
-  .add<MenuItem>({
-    home: {
-      en: { label: 'Home', url: '/en' },
-      ja: { label: 'Home', url: '/ja' },
-    },
-  });
-```
-
-- **Type param `R`**: return value type (default: `string`)
-- **Type param `K`**: key type for entries (usually omitted)
-- **entries**: `Record<K, Record<Locale, R>>`
-- **Returns**: new `ChainBuilder` (immutable)
-
----
-
-### `.addTemplates<C, R, K>()(entries)`
-
-**Curried API — two-step call required.** Adds template functions that receive a context object of type `C`.
-
-```ts
-// ⚠️ Curried: two-step call ()() is mandatory
-const builder = createI18n(['en', 'ja'] as const)
-  .addTemplates<{ name: string; age: number }>()({  // note: ()() two steps
-    greeting: (ctx) => ({
+// Template functions
+const builder2 = createI18n(['en', 'ja'] as const)
+  .add({
+    greeting: (ctx: { name: string; age: number }) => ({
       en: `Hello, ${ctx.name}. You are ${ctx.age}.`,
       ja: `こんにちは、${ctx.name}さん。${ctx.age}歳です。`,
     }),
   });
 
-// Custom return type (JSX.Element)
-const jsxBuilder = createI18n(['en', 'ja'] as const)
-  .addTemplates<{ name: string }, JSX.Element>()({
-    badge: ({ name }) => ({
-      en: <strong>Welcome, {name}!</strong>,
-      ja: <strong>ようこそ、{name}さん！</strong>,
+// Mixing static and template messages in a single add()
+const builder3 = createI18n(['en', 'ja'] as const)
+  .add({
+    title: { en: 'Title', ja: 'タイトル' },
+    greeting: (ctx: { name: string }) => ({
+      en: `Hello, ${ctx.name}`,
+      ja: `こんにちは、${ctx.name}さん`,
     }),
   });
 ```
 
-- **Type param `C`**: context object type (**required**)
-- **Type param `R`**: return value type (default: `string`)
-- **Type param `K`**: key type (usually omitted)
-- **entries**: `Record<K, (ctx: C) => Record<Locale, R>>`
+- **entries**: `Record<K, Record<Locale, string> | ((ctx: C) => Record<Locale, string>)>`
 - **Returns**: new `ChainBuilder` (immutable)
 
 ---
@@ -179,21 +153,7 @@ createI18n(['en', 'ja'] as const)
 createI18n(['en', 'ja'])
 ```
 
-### 2. `addTemplates` is curried — two-step call
-
-```ts
-// ✅ Correct: ()() two steps
-.addTemplates<{ name: string }>()({
-  key: (ctx) => ({ en: `Hello, ${ctx.name}` })
-})
-
-// ❌ Wrong: one-step call causes type error
-.addTemplates<{ name: string }>({
-  key: (ctx) => ({ en: `Hello, ${ctx.name}` })
-})
-```
-
-### 3. `.build()` is immutable
+### 2. `.build()` is immutable
 
 ```ts
 const builder = createI18n(['en', 'ja'] as const).add({ ... });
@@ -203,14 +163,14 @@ const enMessages = builder.build('en');
 const jaMessages = builder.build('ja');
 ```
 
-### 4. ESM only
+### 3. ESM only
 
 ```json
 // Required in package.json
 { "type": "module" }
 ```
 
-### 5. All messages must be called as functions
+### 4. All messages must be called as functions
 
 ```ts
 const m = builder.build('en');
@@ -250,8 +210,8 @@ console.log(messages.greeting()); // "Hello"
 import { createI18n } from 'canopy-i18n';
 
 const messages = createI18n(['en', 'ja'] as const)
-  .addTemplates<{ name: string; age: number }>()({
-    profile: (ctx) => ({
+  .add({
+    profile: (ctx: { name: string; age: number }) => ({
       en: `Name: ${ctx.name}, Age: ${ctx.age}`,
       ja: `名前: ${ctx.name}、年齢: ${ctx.age}歳`,
     }),
@@ -270,9 +230,7 @@ import { createI18n } from 'canopy-i18n';
 const messages = createI18n(['en', 'ja'] as const)
   .add({
     title: { en: 'Items', ja: 'アイテム' },
-  })
-  .addTemplates<{ count: number }>()({
-    count: (ctx) => ({
+    count: (ctx: { count: number }) => ({
       en: `${ctx.count} items`,
       ja: `${ctx.count}個のアイテム`,
     }),
@@ -281,55 +239,6 @@ const messages = createI18n(['en', 'ja'] as const)
 
 console.log(messages.title());             // "Items"
 console.log(messages.count({ count: 5 })); // "5 items"
-```
-
-### Custom Return Type (Object)
-
-```ts
-import { createI18n } from 'canopy-i18n';
-
-type MenuItem = { label: string; url: string; icon: string };
-
-const menu = createI18n(['en', 'ja'] as const)
-  .add<MenuItem>({
-    home: {
-      en: { label: 'Home', url: '/en', icon: '🏡' },
-      ja: { label: 'ホーム', url: '/ja', icon: '🏠' },
-    },
-    about: {
-      en: { label: 'About', url: '/en/about', icon: 'ℹ️' },
-      ja: { label: '概要', url: '/ja/about', icon: 'ℹ️' },
-    },
-  })
-  .build('en');
-
-console.log(menu.home().label); // "Home"
-console.log(menu.home().url);   // "/en"
-```
-
-### Custom Return Type (JSX)
-
-```tsx
-import { createI18n } from 'canopy-i18n';
-import type { JSX } from 'react';
-
-const messages = createI18n(['en', 'ja'] as const)
-  .add<JSX.Element>({
-    badge: {
-      en: <span style={{ background: '#4caf50', color: 'white' }}>NEW</span>,
-      ja: <span style={{ background: '#ff4444', color: 'white' }}>新着</span>,
-    },
-  })
-  .addTemplates<{ name: string }, JSX.Element>()({
-    greeting: ({ name }) => ({
-      en: <strong>Welcome, {name}!</strong>,
-      ja: <strong>ようこそ、{name}さん！</strong>,
-    }),
-  })
-  .build('en');
-
-const badge = messages.badge();
-const greeting = messages.greeting({ name: 'Alice' });
 ```
 
 ### Namespace Pattern (Split Files + bindLocale)
@@ -353,8 +262,8 @@ import { createI18n } from 'canopy-i18n';
 import { LOCALES } from './locales';
 
 export const user = createI18n(LOCALES)
-  .addTemplates<{ name: string }>()({
-    welcome: (ctx) => ({
+  .add({
+    welcome: (ctx: { name: string }) => ({
       en: `Welcome, ${ctx.name}`,
       ja: `ようこそ、${ctx.name}さん`,
     }),
@@ -450,9 +359,7 @@ export const appI18n = defineMessage()
   .add({
     title: { en: 'My App', ja: 'マイアプリ' },
     description: { en: 'Welcome!', ja: 'ようこそ！' },
-  })
-  .addTemplates<{ name: string }>()({
-    greeting: (ctx) => ({
+    greeting: (ctx: { name: string }) => ({
       en: `Hello, ${ctx.name}!`,
       ja: `こんにちは、${ctx.name}さん！`,
     }),
@@ -487,11 +394,9 @@ const profileI18n = createI18n(['en', 'ja'] as const)
   .add({
     title: { en: 'User Profile', ja: 'ユーザープロフィール' },
     editButton: { en: 'Edit Profile', ja: 'プロフィール編集' },
-  })
-  .addTemplates<{ name: string }, JSX.Element>()({
-    greeting: ({ name }) => ({
-      en: <strong>Welcome, {name}!</strong>,
-      ja: <strong>ようこそ、{name}さん！</strong>,
+    greeting: (ctx: { name: string }) => ({
+      en: `Welcome, ${ctx.name}!`,
+      ja: `ようこそ、${ctx.name}さん！`,
     }),
   });
 
@@ -501,7 +406,7 @@ export function ProfileCard({ name }: { name: string }) {
   return (
     <div>
       <h2>{m.title()}</h2>
-      <div>{m.greeting({ name })}</div>
+      <p>{m.greeting({ name })}</p>
       <button>{m.editButton()}</button>
     </div>
   );
@@ -566,7 +471,6 @@ type LocalizedMessage<Ls, C, R = string> =
 | Mistake | Fix |
 |---------|-----|
 | `createI18n(['en', 'ja'])` | `createI18n(['en', 'ja'] as const)` |
-| `.addTemplates<C>({ ... })` | `.addTemplates<C>()({ ... })` (two-step curried call) |
 | `messages.title` | `messages.title()` (call as function) |
 | CommonJS `require()` | Use ESM `import` |
 | Typo in locale key | TypeScript catches it at compile time |

@@ -1,4 +1,3 @@
-import type { JSX } from "react";
 import { defineMessage } from "./i18n";
 import { useBindLocale } from "./LocaleContext";
 
@@ -25,18 +24,16 @@ const profileI18n = defineMessage()
       ja: "プロフィール編集",
       zh: "编辑资料",
     },
-  })
-  .addTemplates<{ name: string; role: string; bio: string }, JSX.Element>()({
-    greeting: {
-      en: ({ name }) => <strong>Welcome, {name}!</strong>,
-      ja: ({ name }) => <strong>ようこそ、{name}さん！</strong>,
-      zh: ({ name }) => <strong>欢迎，{name}！</strong>,
-    },
-    stats: {
-      en: ({ role }) => <span style={{ color: "#666" }}>Current role: {role}</span>,
-      ja: ({ role }) => <span style={{ color: "#666" }}>現在の役割: {role}</span>,
-      zh: ({ role }) => <span style={{ color: "#666" }}>当前角色：{role}</span>,
-    },
+    greeting: (ctx: { name: string; role: string; bio: string }) => ({
+      en: `Welcome, ${ctx.name}!`,
+      ja: `ようこそ、${ctx.name}さん！`,
+      zh: `欢迎，${ctx.name}！`,
+    }),
+    stats: (ctx: { name: string; role: string; bio: string }) => ({
+      en: `Current role: ${ctx.role}`,
+      ja: `現在の役割: ${ctx.role}`,
+      zh: `当前角色：${ctx.role}`,
+    }),
   });
 
 // コンポーネント

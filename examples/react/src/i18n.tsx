@@ -1,5 +1,4 @@
 import { createI18n } from "canopy-i18n";
-import type { JSX } from "react";
 import { LOCALES, type User } from "./types";
 
 export const defineMessage = () => createI18n(LOCALES);
@@ -51,62 +50,17 @@ const features = defineMessage().add({
 });
 
 const dynamicMessages = defineMessage()
-  .addTemplates<User>()({
-    greeting: {
-      en: (ctx) => `Hello, ${ctx.name}!`,
-      ja: (ctx) => `こんにちは、${ctx.name}さん！`,
-      zh: (ctx) => `你好，${ctx.name}！`,
-    },
-    itemCount: {
-      en: (ctx) => `You have ${ctx.count} ${ctx.count === 1 ? "item" : "items"}`,
-      ja: (ctx) => `${ctx.count}個のアイテムがあります`,
-      zh: (ctx) => `你有 ${ctx.count} 个项目`,
-    },
+  .add({
+    greeting: (ctx: User) => ({
+      en: `Hello, ${ctx.name}!`,
+      ja: `こんにちは、${ctx.name}さん！`,
+      zh: `你好，${ctx.name}！`,
+    }),
+    itemCount: (ctx: User) => ({
+      en: `You have ${ctx.count} ${ctx.count === 1 ? "item" : "items"}`,
+      ja: `${ctx.count}個のアイテムがあります`,
+      zh: `你有 ${ctx.count} 个项目`,
+    }),
   });
 
-const jsxMessages = defineMessage()
-  .addTemplates<User, JSX.Element>()({
-    badge: {
-      en: (user) => (
-        <span
-          style={{
-            background: "#FF6B6B",
-            color: "#fff",
-            padding: "4px 12px",
-            borderRadius: "16px",
-            fontWeight: "600",
-          }}
-        >
-          {user.name}
-        </span>
-      ),
-      ja: (user) => (
-        <span
-          style={{
-            background: "#4ECDC4",
-            color: "#fff",
-            padding: "4px 12px",
-            borderRadius: "16px",
-            fontWeight: "600",
-          }}
-        >
-          {user.name}さん
-        </span>
-      ),
-      zh: (user) => (
-        <span
-          style={{
-            background: "#FFB84D",
-            color: "#fff",
-            padding: "4px 12px",
-            borderRadius: "16px",
-            fontWeight: "600",
-          }}
-        >
-          {user.name}
-        </span>
-      ),
-    },
-  });
-
-export const msgsDef = { baseI18n, features, dynamicMessages, jsxMessages };
+export const msgsDef = { baseI18n, features, dynamicMessages };

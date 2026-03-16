@@ -79,22 +79,6 @@ export default function App() {
         style={{
           marginTop: "30px",
           padding: "20px",
-          background: "#fff3e0",
-          borderRadius: "8px",
-        }}
-      >
-        <h2 style={{ fontSize: "1.5em", marginBottom: "15px" }}>
-          JSX Messages (addTemplates with JSX.Element)
-        </h2>
-        <p style={{ margin: "0", fontSize: "1.1em" }}>
-          User Badge: {m.jsxMessages.badge(user)}
-        </p>
-      </section>
-
-      <section
-        style={{
-          marginTop: "30px",
-          padding: "20px",
           background: "#e8f5e9",
           borderRadius: "8px",
         }}

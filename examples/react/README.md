@@ -108,12 +108,12 @@ const baseI18n = createI18n(LOCALES).add({
 
 // Dynamic messages with context
 const dynamicMessages = createI18n(LOCALES)
-  .addTemplates<{ name: string }>()({
-    greeting: {
-      en: (ctx) => `Hello, ${ctx.name}!`,
-      ja: (ctx) => `こんにちは、${ctx.name}さん！`,
-      zh: (ctx) => `你好，${ctx.name}！`
-    }
+  .add({
+    greeting: (ctx: { name: string }) => ({
+      en: `Hello, ${ctx.name}!`,
+      ja: `こんにちは、${ctx.name}さん！`,
+      zh: `你好，${ctx.name}！`
+    })
   });
 ```
 
@@ -173,30 +173,16 @@ const messages = createI18n(LOCALES).add({
 
 ### Dynamic Template Messages
 
-Messages that accept context parameters using `.addTemplates()`:
+Messages that accept context parameters using `.add()`:
 
 ```tsx
 const messages = createI18n(LOCALES)
-  .addTemplates<{ count: number }>()({
-    items: {
-      en: (ctx) => `You have ${ctx.count} items`,
-      ja: (ctx) => `${ctx.count}個のアイテムがあります`,
-      zh: (ctx) => `你有 ${ctx.count} 个项目`
-    }
-  });
-```
-
-### JSX Element Messages
-
-Return React components directly from messages:
-
-```tsx
-const jsxMessages = createI18n(LOCALES)
-  .addTemplates<User, JSX.Element>()({
-    badge: {
-      en: (user) => <span className="badge">{user.name}</span>,
-      ja: (user) => <span className="badge">{user.name}さん</span>
-    }
+  .add({
+    items: (ctx: { count: number }) => ({
+      en: `You have ${ctx.count} items`,
+      ja: `${ctx.count}個のアイテムがあります`,
+      zh: `你有 ${ctx.count} 个项目`
+    })
   });
 ```
 

@@ -17,60 +17,42 @@ export class ChainBuilder<
   }
 
   /**
-   * 複数のメッセージを一度に追加
+   * 静的メッセージとテンプレート関数を一度に追加
    */
   add<
-    Entries extends Record<string, Record<Ls[number], string>>,
+    Entries extends Record<string, Record<Ls[number], string> | ((ctx: any) => Record<Ls[number], string>)>,
   >(
     entries: { [Key in keyof Entries]: Key extends keyof Messages ? never : Entries[Key] },
   ): ChainBuilder<
     Ls,
-    Messages & { [Key in keyof Entries]: I18nMessage<Ls, void> }
+    Messages & {
+      [Key in keyof Entries]: Entries[Key] extends (ctx: infer C) => any
+        ? I18nMessage<Ls, C>
+        : I18nMessage<Ls, void>
+    }
   > {
     const newMessages = { ...this.messages };
 
-    for (const [key, data] of Object.entries(entries)) {
-      const msg = new I18nMessage<Ls, void>(this.locales, this.locales[0] as Ls[number]).setData(
-        data as any,
-      );
-      (newMessages as any)[key] = msg;
-    }
-
-    return new ChainBuilder(this.locales, newMessages as any);
-  }
-
-  /**
-   * 関数指定版: 複数のテンプレート関数を一度に追加(型は統一)
-   */
-  addTemplates<C>(): <
-    Entries extends Record<string, (ctx: C) => Record<Ls[number], string>>,
-  >(
-    entries: { [Key in keyof Entries]: Key extends keyof Messages ? never : Entries[Key] },
-  ) => ChainBuilder<
-    Ls,
-    Messages & { [Key in keyof Entries]: I18nMessage<Ls, C> }
-  > {
-    return <Entries extends Record<string, (ctx: C) => Record<Ls[number], string>>>(
-      entries: { [Key in keyof Entries]: Key extends keyof Messages ? never : Entries[Key] },
-    ): ChainBuilder<
-      Ls,
-      Messages & { [Key in keyof Entries]: I18nMessage<Ls, C> }
-    > => {
-      const newMessages = { ...this.messages };
-
-      for (const [key, fn] of Object.entries(entries)) {
-        const localeData: Record<string, (ctx: C) => any> = {};
+    for (const [key, value] of Object.entries(entries)) {
+      if (typeof value === "function") {
+        const fn = value as (ctx: any) => Record<string, any>;
+        const localeData: Record<string, (ctx: any) => any> = {};
         for (const locale of this.locales) {
-          localeData[locale] = (ctx: C) => (fn as (ctx: C) => Record<string, any>)(ctx)[locale];
+          localeData[locale] = (ctx: any) => fn(ctx)[locale];
         }
-        const msg = new I18nMessage<Ls, C>(this.locales, this.locales[0] as Ls[number]).setData(
-          localeData as Record<Ls[number], (ctx: C) => any>,
+        const msg = new I18nMessage<Ls, any>(this.locales, this.locales[0] as Ls[number]).setData(
+          localeData as any,
+        );
+        (newMessages as any)[key] = msg;
+      } else {
+        const msg = new I18nMessage<Ls, void>(this.locales, this.locales[0] as Ls[number]).setData(
+          value as any,
         );
         (newMessages as any)[key] = msg;
       }
+    }
 
-      return new ChainBuilder(this.locales, newMessages as any);
-    };
+    return new ChainBuilder(this.locales, newMessages as any);
   }
 
   private deepCloneWithLocale<T>(obj: T, locale: Ls[number]): T {

@@ -35,11 +35,9 @@ describe("ChainBuilder", () => {
           ja: "ようこそ",
           en: "Welcome",
         },
-      })
-      .addTemplates<{ name: string; age: number }>()({
-        greet: ({ name, age }) => ({
-          ja: `こんにちは、${name}さん。${age}歳ですね。`,
-          en: `Hello, ${name}. You are ${age}.`,
+        greet: (ctx: { name: string; age: number }) => ({
+          ja: `こんにちは、${ctx.name}さん。${ctx.age}歳ですね。`,
+          en: `Hello, ${ctx.name}. You are ${ctx.age}.`,
         }),
       })
       .build("ja");
@@ -48,14 +46,14 @@ describe("ChainBuilder", () => {
     expect(messages.greet({ name: "太郎", age: 25 })).toBe("こんにちは、太郎さん。25歳ですね。");
   });
 
-  it("supports adding multiple template messages at once with unified type", () => {
+  it("supports adding multiple template messages at once", () => {
     const messages = createI18n(LOCALES)
-      .addTemplates<{ name: string }>()({
-        greet: (ctx) => ({
+      .add({
+        greet: (ctx: { name: string }) => ({
           ja: `こんにちは、${ctx.name}さん`,
           en: `Hello, ${ctx.name}`,
         }),
-        farewell: (ctx) => ({
+        farewell: (ctx: { name: string }) => ({
           ja: `さようなら、${ctx.name}さん`,
           en: `Goodbye, ${ctx.name}`,
         }),
@@ -70,9 +68,7 @@ describe("ChainBuilder", () => {
     const builder = createI18n(LOCALES)
       .add({
         title: { ja: "タイトル", en: "Title" },
-      })
-      .addTemplates<{ name: string }>()({
-        msg: (c) => ({
+        msg: (c: { name: string }) => ({
           ja: `こんにちは、${c.name}さん`,
           en: `Hello, ${c.name}`,
         }),
@@ -88,9 +84,7 @@ describe("ChainBuilder", () => {
       .add({
         title: { ja: "タイトル", en: "Title" },
         greeting: { ja: "こんにちは", en: "Hello" },
-      })
-      .addTemplates<{ name: string }>()({
-        welcome: (ctx) => ({
+        welcome: (ctx: { name: string }) => ({
           ja: `ようこそ、${ctx.name}さん`,
           en: `Welcome, ${ctx.name}`,
         }),

@@ -9,7 +9,6 @@ A tiny, type-safe i18n library for building localized messages with builder patt
 - **AI-friendly**: Full type safety and single-file colocation give AI assistants complete context for accurate code generation.
 - **Type-safe**: Compile-time safety for locale keys with full TypeScript IntelliSense support.
 - **Flexible templating**: Plain functions support any JavaScript logic, template literals, or formatting library.
-- **Generic return types**: Return strings, React components, objects, or any custom type.
 - **Zero dependencies**: Lightweight with native TypeScript syntax, no custom {{placeholder}} format.
 ## Why Canopy i18n?
 
@@ -45,30 +44,14 @@ console.log(messages.greeting());  // Fully type-safe, autocomplete works
 **With template functions:**
 ```ts
 const messages = createI18n(['en', 'ja'] as const)
-  .addTemplates<{ name: string }>()({
-    welcome: ({ name }) => ({
-      en: `Welcome, ${name}!`,
-      ja: `ようこそ、${name}さん！`
+  .add({
+    welcome: (ctx: { name: string }) => ({
+      en: `Welcome, ${ctx.name}!`,
+      ja: `ようこそ、${ctx.name}さん！`
     })
   }).build('en');
 
 console.log(messages.welcome({ name: 'Alice' }));  // "Welcome, Alice!"
-```
-
-**With custom return types:**
-```ts
-type MenuItem = { label: string; url: string };
-
-const menu = createI18n(['en', 'ja'] as const)
-  .add<MenuItem>({
-    home: {
-      en: { label: 'Home', url: '/en' },
-      ja: { label: 'ホーム', url: '/ja' }
-    }
-  }).build('ja');
-
-console.log(menu.home().label);  // "ホーム"
-console.log(menu.home().url);    // "/ja"
 ```
 
 **Benefits:**
@@ -109,9 +92,7 @@ const builder = baseBuilder
       ja: 'こんにちは',
       en: 'Hello',
     },
-  })
-  .addTemplates<{ name: string; age: number }>()({
-    welcome: (ctx) => ({
+    welcome: (ctx: { name: string; age: number }) => ({
       ja: `こんにちは、${ctx.name}さん。あなたは${ctx.age}歳です。`,
       en: `Hello, ${ctx.name}. You are ${ctx.age} years old.`,
     }),
@@ -147,68 +128,40 @@ const builder = createI18n(['ja', 'en', 'fr'] as const);
 ### `ChainBuilder`
 A builder class for creating multiple localized messages with method chaining.
 
-#### `.add<ReturnType = string, K extends string = string>(entries)`
-Adds multiple messages at once. By default, returns `string`, but you can specify a custom return type.
+#### `.add(entries)`
+Adds multiple messages at once. Each entry can be a static locale record or a template function.
 
-- **ReturnType**: (optional) Type parameter for the return value (defaults to `string`)
-- **K**: (optional) Type parameter for the keys of the entries record (defaults to `string`)
-- **entries**: `Record<K, Record<Locale, ReturnType>>`
+- **entries**: `Record<K, Record<Locale, string> | ((ctx: C) => Record<Locale, string>)>`
 - Returns: `ChainBuilder` with added messages
 
 ```ts
-// String messages (default)
+// Static messages
 const builder = createI18n(['ja', 'en'] as const)
   .add({
     title: { ja: 'タイトル', en: 'Title' },
     greeting: { ja: 'こんにちは', en: 'Hello' },
   });
 
-// Custom return type (e.g., React components)
-const messages = createI18n(['ja', 'en'] as const)
-  .add<JSX.Element>({
-    badge: {
-      ja: <span style={{ background: '#ff4444', color: 'white', padding: '2px 6px', borderRadius: '2px' }}>🔴 新着</span>,
-      en: <span style={{ background: '#4caf50', color: 'white', padding: '4px 12px', borderRadius: '16px' }}>✨ NEW</span>,
-    },
-  });
-
-// Custom return type (objects)
-type MenuItem = {
-  label: string;
-  url: string;
-  icon: string;
-};
-
-const menu = createI18n(['ja', 'en'] as const)
-  .add<MenuItem>({
-    home: {
-      ja: { label: 'ホーム', url: '/ja', icon: '🏠' },
-      en: { label: 'Home', url: '/en', icon: '🏡' },
-    },
-  });
-```
-
-#### `.addTemplates<Context, ReturnType = string, K extends string = string>()(entries)`
-Adds multiple template function messages at once with a unified context type and custom return type.
-
-Note: This uses a curried API for better type inference. Call `addTemplates<Context, ReturnType, K>()` first, then call the returned function with entries.
-
-- **Context**: Type parameter for the template function context
-- **ReturnType**: (optional) Type parameter for the return value (defaults to `string`)
-- **K**: (optional) Type parameter for the keys of the entries record (defaults to `string`)
-- **entries**: `Record<K, (ctx: Context) => Record<Locale, ReturnType>>`
-- Returns: `ChainBuilder` with added template messages
-
-```ts
-const builder = createI18n(['ja', 'en'] as const)
-  .addTemplates<{ name: string; age: number }>()({
-    greet: (ctx) => ({
+// Template functions
+const builder2 = createI18n(['ja', 'en'] as const)
+  .add({
+    greet: (ctx: { name: string; age: number }) => ({
       ja: `こんにちは、${ctx.name}さん。${ctx.age}歳ですね。`,
       en: `Hello, ${ctx.name}. You are ${ctx.age}.`,
     }),
-    farewell: (ctx) => ({
+    farewell: (ctx: { name: string }) => ({
       ja: `さようなら、${ctx.name}さん。`,
       en: `Goodbye, ${ctx.name}.`,
+    }),
+  });
+
+// Mixing static and template messages
+const builder3 = createI18n(['ja', 'en'] as const)
+  .add({
+    title: { ja: 'タイトル', en: 'Title' },
+    greet: (ctx: { name: string }) => ({
+      ja: `こんにちは、${ctx.name}さん`,
+      en: `Hello, ${ctx.name}`,
     }),
   });
 ```
@@ -254,7 +207,7 @@ console.log(localized.nested.special.msg()); // English version
 
 ```ts
 export type Template<C, R = string> = R | ((ctx: C) => R);
-export type LocalizedMessage<Locales, Context, ReturnType = string> = I18nMessage<Locales, Context, ReturnType>;
+export type LocalizedMessage<Locales, Context> = I18nMessage<Locales, Context>;
 ```
 
 ## Exports
@@ -288,8 +241,8 @@ console.log(messages.greeting()); // "Hello"
 
 ```ts
 const messages = createI18n(['ja', 'en'] as const)
-  .addTemplates<{ name: string; age: number }>()({
-    profile: (ctx) => ({
+  .add({
+    profile: (ctx: { name: string; age: number }) => ({
       ja: `名前: ${ctx.name}、年齢: ${ctx.age}歳`,
       en: `Name: ${ctx.name}, Age: ${ctx.age}`,
     }),
@@ -300,15 +253,13 @@ console.log(messages.profile({ name: 'Taro', age: 25 }));
 // "Name: Taro, Age: 25"
 ```
 
-### Mixing String and Template Messages
+### Mixing Static and Template Messages
 
 ```ts
 const messages = createI18n(['ja', 'en'] as const)
   .add({
     title: { ja: 'タイトル', en: 'Title' },
-  })
-  .addTemplates<{ count: number }>()({
-    items: (ctx) => ({
+    items: (ctx: { count: number }) => ({
       ja: `${ctx.count}個のアイテム`,
       en: `${ctx.count} items`,
     }),
@@ -340,8 +291,8 @@ export const common = createI18n(LOCALES).add({
 import { createI18n } from 'canopy-i18n';
 import { LOCALES } from './locales';
 
-export const user = createI18n(LOCALES).addTemplates<{ name: string }>()({
-  welcome: (ctx) => ({
+export const user = createI18n(LOCALES).add({
+  welcome: (ctx: { name: string }) => ({
     ja: `ようこそ、${ctx.name}さん`,
     en: `Welcome, ${ctx.name}`,
   }),

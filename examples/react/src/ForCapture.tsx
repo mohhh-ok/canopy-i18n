@@ -12,11 +12,10 @@ const msgs = createI18n(LOCALES)
       en: "A tiny, type-safe i18n helper",
       ja: "軽量で型安全なi18nヘルパー",
     },
-  }).addTemplates<{ name: string }>()({
-    greeting: {
-      en: ({ name }) => `Hello, ${name}!`,
-      ja: ({ name }) => `${name}さん、こんにちは！`,
-    },
+    greeting: (ctx: { name: string }) => ({
+      en: `Hello, ${ctx.name}!`,
+      ja: `${ctx.name}さん、こんにちは！`,
+    }),
   });
 
 export default function Page({ name }: { name: string }) {
