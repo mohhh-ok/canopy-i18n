@@ -18,23 +18,21 @@ export class ChainBuilder<
 
   /**
    * 複数のメッセージを一度に追加
-   * 型パラメータRでカスタム型も指定可能(デフォルトはstring)
+   * 値の型は引数から自動推論される
    */
   add<
-    R = string,
-    K extends string = string,
-    Entries extends Record<K, Record<Ls[number], R>> = Record<K, Record<Ls[number], R>>,
+    Entries extends Record<string, Record<Ls[number], any>>,
   >(
     entries: { [Key in keyof Entries]: Key extends keyof Messages ? never : Entries[Key] },
   ): ChainBuilder<
     Ls,
-    Messages & { [Key in keyof Entries]: I18nMessage<Ls, void, R> }
+    Messages & { [Key in keyof Entries]: I18nMessage<Ls, void, Entries[Key] extends Record<string, infer R> ? R : never> }
   > {
     const newMessages = { ...this.messages };
 
     for (const [key, data] of Object.entries(entries)) {
-      const msg = new I18nMessage<Ls, void, R>(this.locales, this.locales[0] as Ls[number]).setData(
-        data as Record<Ls[number], R>,
+      const msg = new I18nMessage<Ls, void, any>(this.locales, this.locales[0] as Ls[number]).setData(
+        data as Record<Ls[number], any>,
       );
       (newMessages as any)[key] = msg;
     }
@@ -45,25 +43,29 @@ export class ChainBuilder<
   /**
    * 関数指定版: 複数のテンプレート関数を一度に追加(型は統一)
    */
-  addTemplates<C, R = string, K extends string = string>(): <
-    Entries extends Record<K, Record<Ls[number], (ctx: C) => R>>,
+  addTemplates<C>(): <
+    Entries extends Record<string, (ctx: C) => Record<Ls[number], any>>,
   >(
     entries: { [Key in keyof Entries]: Key extends keyof Messages ? never : Entries[Key] },
   ) => ChainBuilder<
     Ls,
-    Messages & { [Key in keyof Entries]: I18nMessage<Ls, C, R> }
+    Messages & { [Key in keyof Entries]: I18nMessage<Ls, C, ReturnType<Entries[Key]> extends Record<string, infer R> ? R : never> }
   > {
-    return <Entries extends Record<K, Record<Ls[number], (ctx: C) => R>>>(
+    return <Entries extends Record<string, (ctx: C) => Record<Ls[number], any>>>(
       entries: { [Key in keyof Entries]: Key extends keyof Messages ? never : Entries[Key] },
     ): ChainBuilder<
       Ls,
-      Messages & { [Key in keyof Entries]: I18nMessage<Ls, C, R> }
+      Messages & { [Key in keyof Entries]: I18nMessage<Ls, C, ReturnType<Entries[Key]> extends Record<string, infer R> ? R : never> }
     > => {
       const newMessages = { ...this.messages };
 
-      for (const [key, data] of Object.entries(entries)) {
-        const msg = new I18nMessage<Ls, C, R>(this.locales, this.locales[0] as Ls[number]).setData(
-          data as Record<Ls[number], (ctx: C) => R>,
+      for (const [key, fn] of Object.entries(entries)) {
+        const localeData: Record<string, (ctx: C) => any> = {};
+        for (const locale of this.locales) {
+          localeData[locale] = (ctx: C) => (fn as (ctx: C) => Record<string, any>)(ctx)[locale];
+        }
+        const msg = new I18nMessage<Ls, C, any>(this.locales, this.locales[0] as Ls[number]).setData(
+          localeData as Record<Ls[number], (ctx: C) => any>,
         );
         (newMessages as any)[key] = msg;
       }

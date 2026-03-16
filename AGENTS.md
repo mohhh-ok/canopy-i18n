@@ -1,16 +1,22 @@
-## Package Manager
+# Canopy i18n
+i18nライブラリです。
 
+## Package Manager
 bun
 
 ## Examples
-
 できるだけコード量は少なく、シンプルなデザインにしてください。
 
 - examples/react
 
 ## バージョン管理
-
 バージョンは手動で管理します。
+
+## ドキュメント
+ユーザーに公開しているドキュメントは複数あります。適時更新してください。
+
+- README.md
+- skills/SKILL.md
 
 ## 他要望
 

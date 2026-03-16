@@ -96,26 +96,26 @@ const menu = createI18n(['en', 'ja'] as const)
 // ⚠️ Curried: two-step call ()() is mandatory
 const builder = createI18n(['en', 'ja'] as const)
   .addTemplates<{ name: string; age: number }>()({  // note: ()() two steps
-    greeting: {
-      en: (ctx) => `Hello, ${ctx.name}. You are ${ctx.age}.`,
-      ja: (ctx) => `こんにちは、${ctx.name}さん。${ctx.age}歳です。`,
-    },
+    greeting: (ctx) => ({
+      en: `Hello, ${ctx.name}. You are ${ctx.age}.`,
+      ja: `こんにちは、${ctx.name}さん。${ctx.age}歳です。`,
+    }),
   });
 
 // Custom return type (JSX.Element)
 const jsxBuilder = createI18n(['en', 'ja'] as const)
   .addTemplates<{ name: string }, JSX.Element>()({
-    badge: {
-      en: ({ name }) => <strong>Welcome, {name}!</strong>,
-      ja: ({ name }) => <strong>ようこそ、{name}さん！</strong>,
-    },
+    badge: ({ name }) => ({
+      en: <strong>Welcome, {name}!</strong>,
+      ja: <strong>ようこそ、{name}さん！</strong>,
+    }),
   });
 ```
 
 - **Type param `C`**: context object type (**required**)
 - **Type param `R`**: return value type (default: `string`)
 - **Type param `K`**: key type (usually omitted)
-- **entries**: `Record<K, Record<Locale, (ctx: C) => R>>`
+- **entries**: `Record<K, (ctx: C) => Record<Locale, R>>`
 - **Returns**: new `ChainBuilder` (immutable)
 
 ---
@@ -188,12 +188,12 @@ createI18n(['en', 'ja'])
 ```ts
 // ✅ Correct: ()() two steps
 .addTemplates<{ name: string }>()({
-  key: { en: (ctx) => `Hello, ${ctx.name}` }
+  key: (ctx) => ({ en: `Hello, ${ctx.name}` })
 })
 
 // ❌ Wrong: one-step call causes type error
 .addTemplates<{ name: string }>({
-  key: { en: (ctx) => `Hello, ${ctx.name}` }
+  key: (ctx) => ({ en: `Hello, ${ctx.name}` })
 })
 ```
 
@@ -255,10 +255,10 @@ import { createI18n } from 'canopy-i18n';
 
 const messages = createI18n(['en', 'ja'] as const)
   .addTemplates<{ name: string; age: number }>()({
-    profile: {
-      en: (ctx) => `Name: ${ctx.name}, Age: ${ctx.age}`,
-      ja: (ctx) => `名前: ${ctx.name}、年齢: ${ctx.age}歳`,
-    },
+    profile: (ctx) => ({
+      en: `Name: ${ctx.name}, Age: ${ctx.age}`,
+      ja: `名前: ${ctx.name}、年齢: ${ctx.age}歳`,
+    }),
   })
   .build('en');
 
@@ -276,10 +276,10 @@ const messages = createI18n(['en', 'ja'] as const)
     title: { en: 'Items', ja: 'アイテム' },
   })
   .addTemplates<{ count: number }>()({
-    count: {
-      en: (ctx) => `${ctx.count} items`,
-      ja: (ctx) => `${ctx.count}個のアイテム`,
-    },
+    count: (ctx) => ({
+      en: `${ctx.count} items`,
+      ja: `${ctx.count}個のアイテム`,
+    }),
   })
   .build('en');
 
@@ -325,10 +325,10 @@ const messages = createI18n(['en', 'ja'] as const)
     },
   })
   .addTemplates<{ name: string }, JSX.Element>()({
-    greeting: {
-      en: ({ name }) => <strong>Welcome, {name}!</strong>,
-      ja: ({ name }) => <strong>ようこそ、{name}さん！</strong>,
-    },
+    greeting: ({ name }) => ({
+      en: <strong>Welcome, {name}!</strong>,
+      ja: <strong>ようこそ、{name}さん！</strong>,
+    }),
   })
   .build('en');
 
@@ -358,10 +358,10 @@ import { LOCALES } from './locales';
 
 export const user = createI18n(LOCALES)
   .addTemplates<{ name: string }>()({
-    welcome: {
-      en: (ctx) => `Welcome, ${ctx.name}`,
-      ja: (ctx) => `ようこそ、${ctx.name}さん`,
-    },
+    welcome: (ctx) => ({
+      en: `Welcome, ${ctx.name}`,
+      ja: `ようこそ、${ctx.name}さん`,
+    }),
   });
 
 // i18n/index.ts
@@ -456,10 +456,10 @@ export const appI18n = defineMessage()
     description: { en: 'Welcome!', ja: 'ようこそ！' },
   })
   .addTemplates<{ name: string }>()({
-    greeting: {
-      en: (ctx) => `Hello, ${ctx.name}!`,
-      ja: (ctx) => `こんにちは、${ctx.name}さん！`,
-    },
+    greeting: (ctx) => ({
+      en: `Hello, ${ctx.name}!`,
+      ja: `こんにちは、${ctx.name}さん！`,
+    }),
   });
 
 // App.tsx — apply locale with useBindLocale
@@ -493,10 +493,10 @@ const profileI18n = createI18n(['en', 'ja'] as const)
     editButton: { en: 'Edit Profile', ja: 'プロフィール編集' },
   })
   .addTemplates<{ name: string }, JSX.Element>()({
-    greeting: {
-      en: ({ name }) => <strong>Welcome, {name}!</strong>,
-      ja: ({ name }) => <strong>ようこそ、{name}さん！</strong>,
-    },
+    greeting: ({ name }) => ({
+      en: <strong>Welcome, {name}!</strong>,
+      ja: <strong>ようこそ、{name}さん！</strong>,
+    }),
   });
 
 export function ProfileCard({ name }: { name: string }) {
@@ -570,7 +570,7 @@ type LocalizedMessage<Ls, C, R = string> =
 | Mistake | Fix |
 |---------|-----|
 | `createI18n(['en', 'ja'])` | `createI18n(['en', 'ja'] as const)` |
-| `.addTemplates<C>({ ... })` | `.addTemplates<C>()({ ... })` (two-step) |
+| `.addTemplates<C>({ ... })` | `.addTemplates<C>()({ ... })` (two-step curried call) |
 | `messages.title` | `messages.title()` (call as function) |
 | CommonJS `require()` | Use ESM `import` |
 | Typo in locale key | TypeScript catches it at compile time |

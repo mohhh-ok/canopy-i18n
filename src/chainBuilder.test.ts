@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { bindLocale } from "./bindLocale";
-import { createI18n } from "./chainBuilder";
+import { bindLocale } from "./bindLocale.js";
+import { createI18n } from "./chainBuilder.js";
 
 const LOCALES = ["ja", "en"] as const;
 
@@ -37,10 +37,10 @@ describe("ChainBuilder", () => {
         },
       })
       .addTemplates<{ name: string; age: number }>()({
-        greet: {
-          ja: (ctx) => `こんにちは、${ctx.name}さん。${ctx.age}歳ですね。`,
-          en: (ctx) => `Hello, ${ctx.name}. You are ${ctx.age}.`,
-        },
+        greet: ({ name, age }) => ({
+          ja: `こんにちは、${name}さん。${age}歳ですね。`,
+          en: `Hello, ${name}. You are ${age}.`,
+        }),
       })
       .build("ja");
 
@@ -51,14 +51,14 @@ describe("ChainBuilder", () => {
   it("supports adding multiple template messages at once with unified type", () => {
     const messages = createI18n(LOCALES)
       .addTemplates<{ name: string }>()({
-        greet: {
-          ja: (ctx) => `こんにちは、${ctx.name}さん`,
-          en: (ctx) => `Hello, ${ctx.name}`,
-        },
-        farewell: {
-          ja: (ctx) => `さようなら、${ctx.name}さん`,
-          en: (ctx) => `Goodbye, ${ctx.name}`,
-        },
+        greet: (ctx) => ({
+          ja: `こんにちは、${ctx.name}さん`,
+          en: `Hello, ${ctx.name}`,
+        }),
+        farewell: (ctx) => ({
+          ja: `さようなら、${ctx.name}さん`,
+          en: `Goodbye, ${ctx.name}`,
+        }),
       })
       .build("ja");
 
@@ -72,10 +72,10 @@ describe("ChainBuilder", () => {
         title: { ja: "タイトル", en: "Title" },
       })
       .addTemplates<{ name: string }>()({
-        msg: {
-          ja: (c) => `こんにちは、${c.name}さん`,
-          en: (c) => `Hello, ${c.name}`,
-        },
+        msg: (c) => ({
+          ja: `こんにちは、${c.name}さん`,
+          en: `Hello, ${c.name}`,
+        }),
       });
 
     const localized = bindLocale(builder, "en");
@@ -90,10 +90,10 @@ describe("ChainBuilder", () => {
         greeting: { ja: "こんにちは", en: "Hello" },
       })
       .addTemplates<{ name: string }>()({
-        welcome: {
-          ja: (ctx) => `ようこそ、${ctx.name}さん`,
-          en: (ctx) => `Welcome, ${ctx.name}`,
-        },
+        welcome: (ctx) => ({
+          ja: `ようこそ、${ctx.name}さん`,
+          en: `Welcome, ${ctx.name}`,
+        }),
       })
       .build("en");
 
@@ -168,7 +168,7 @@ describe("ChainBuilder", () => {
     };
 
     const messages = createI18n(LOCALES)
-      .add<MenuItem>({
+      .add({
         home: {
           ja: { label: "ホーム", url: "/" },
           en: { label: "Home", url: "/" },
@@ -200,11 +200,11 @@ describe("ChainBuilder", () => {
     };
 
     const messages = createI18n(LOCALES)
-      .addTemplates<ButtonContext, ButtonData>()({
-        button: {
-          ja: (ctx) => ({ text: ctx.label, color: "青" }),
-          en: (ctx) => ({ text: ctx.label, color: "blue" }),
-        },
+      .addTemplates<ButtonContext>()({
+        button: (ctx) => ({
+          ja: { text: ctx.label, color: "青" },
+          en: { text: ctx.label, color: "blue" },
+        }),
       })
       .build("en");
 
@@ -223,7 +223,7 @@ describe("ChainBuilder", () => {
       .add({
         title: { ja: "タイトル", en: "Title" },
       })
-      .add<Badge>({
+      .add({
         badge: {
           ja: { text: "新着", level: "info" },
           en: { text: "NEW", level: "info" },

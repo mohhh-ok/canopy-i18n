@@ -46,10 +46,10 @@ console.log(messages.greeting());  // Fully type-safe, autocomplete works
 ```ts
 const messages = createI18n(['en', 'ja'] as const)
   .addTemplates<{ name: string }>()({
-    welcome: {
-      en: ({ name }) => `Welcome, ${name}!`,
-      ja: ({ name }) => `ようこそ、${name}さん！`
-    }
+    welcome: ({ name }) => ({
+      en: `Welcome, ${name}!`,
+      ja: `ようこそ、${name}さん！`
+    })
   }).build('en');
 
 console.log(messages.welcome({ name: 'Alice' }));  // "Welcome, Alice!"
@@ -111,10 +111,10 @@ const builder = baseBuilder
     },
   })
   .addTemplates<{ name: string; age: number }>()({
-    welcome: {
-      ja: (ctx) => `こんにちは、${ctx.name}さん。あなたは${ctx.age}歳です。`,
-      en: (ctx) => `Hello, ${ctx.name}. You are ${ctx.age} years old.`,
-    },
+    welcome: (ctx) => ({
+      ja: `こんにちは、${ctx.name}さん。あなたは${ctx.age}歳です。`,
+      en: `Hello, ${ctx.name}. You are ${ctx.age} years old.`,
+    }),
   });
 
 // 3) Reuse the builder to create messages for different locales
@@ -196,20 +196,20 @@ Note: This uses a curried API for better type inference. Call `addTemplates<Cont
 - **Context**: Type parameter for the template function context
 - **ReturnType**: (optional) Type parameter for the return value (defaults to `string`)
 - **K**: (optional) Type parameter for the keys of the entries record (defaults to `string`)
-- **entries**: `Record<K, Record<Locale, (ctx: Context) => ReturnType>>`
+- **entries**: `Record<K, (ctx: Context) => Record<Locale, ReturnType>>`
 - Returns: `ChainBuilder` with added template messages
 
 ```ts
 const builder = createI18n(['ja', 'en'] as const)
   .addTemplates<{ name: string; age: number }>()({
-    greet: {
-      ja: (ctx) => `こんにちは、${ctx.name}さん。${ctx.age}歳ですね。`,
-      en: (ctx) => `Hello, ${ctx.name}. You are ${ctx.age}.`,
-    },
-    farewell: {
-      ja: (ctx) => `さようなら、${ctx.name}さん。`,
-      en: (ctx) => `Goodbye, ${ctx.name}.`,
-    },
+    greet: (ctx) => ({
+      ja: `こんにちは、${ctx.name}さん。${ctx.age}歳ですね。`,
+      en: `Hello, ${ctx.name}. You are ${ctx.age}.`,
+    }),
+    farewell: (ctx) => ({
+      ja: `さようなら、${ctx.name}さん。`,
+      en: `Goodbye, ${ctx.name}.`,
+    }),
   });
 ```
 
@@ -293,10 +293,10 @@ console.log(messages.greeting()); // "Hello"
 ```ts
 const messages = createI18n(['ja', 'en'] as const)
   .addTemplates<{ name: string; age: number }>()({
-    profile: {
-      ja: (ctx) => `名前: ${ctx.name}、年齢: ${ctx.age}歳`,
-      en: (ctx) => `Name: ${ctx.name}, Age: ${ctx.age}`,
-    },
+    profile: (ctx) => ({
+      ja: `名前: ${ctx.name}、年齢: ${ctx.age}歳`,
+      en: `Name: ${ctx.name}, Age: ${ctx.age}`,
+    }),
   })
   .build('en');
 
@@ -312,10 +312,10 @@ const messages = createI18n(['ja', 'en'] as const)
     title: { ja: 'タイトル', en: 'Title' },
   })
   .addTemplates<{ count: number }>()({
-    items: {
-      ja: (ctx) => `${ctx.count}個のアイテム`,
-      en: (ctx) => `${ctx.count} items`,
-    },
+    items: (ctx) => ({
+      ja: `${ctx.count}個のアイテム`,
+      en: `${ctx.count} items`,
+    }),
   })
   .build('ja');
 
@@ -345,10 +345,10 @@ import { createI18n } from 'canopy-i18n';
 import { LOCALES } from './locales';
 
 export const user = createI18n(LOCALES).addTemplates<{ name: string }>()({
-  welcome: {
-    ja: (ctx) => `ようこそ、${ctx.name}さん`,
-    en: (ctx) => `Welcome, ${ctx.name}`,
-  },
+  welcome: (ctx) => ({
+    ja: `ようこそ、${ctx.name}さん`,
+    en: `Welcome, ${ctx.name}`,
+  }),
 });
 
 // i18n/index.ts
