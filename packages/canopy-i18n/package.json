@@ -49,9 +49,6 @@
     "type-check": "tsc -p . --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "release:patch": "npm version patch && bun run _publish",
-    "release:minor": "npm version minor && bun run _publish",
-    "release:major": "npm version major && bun run _publish",
     "_publish": "npm publish && git push --follow-tags && gh release create \"$(node -p \"require('./package.json').version\")\" --generate-notes"
   },
   "devDependencies": {
