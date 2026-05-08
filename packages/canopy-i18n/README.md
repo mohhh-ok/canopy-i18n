@@ -406,6 +406,7 @@ For common sources, `canopy-i18n/react` ships ready-made factories. Each returns
 import {
   createHashI18nReact,     // URL hash (#ja)
   createSearchI18nReact,   // URL search param (?lang=ja, configurable via { param })
+  createPathnameI18nReact, // URL pathname prefix (/ja/..., configurable via { basePath })
   createStorageI18nReact,  // localStorage (configurable via { key })
 } from 'canopy-i18n/react';
 

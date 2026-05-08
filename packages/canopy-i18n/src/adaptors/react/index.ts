@@ -7,6 +7,8 @@ export type {
   UseLocaleSource,
 } from "./createI18nReact.js";
 export { createHashI18nReact } from "./createHashI18nReact.js";
+export { createPathnameI18nReact } from "./createPathnameI18nReact.js";
+export type { CreatePathnameI18nReactOptions } from "./createPathnameI18nReact.js";
 export { createSearchI18nReact } from "./createSearchI18nReact.js";
 export type { CreateSearchI18nReactOptions } from "./createSearchI18nReact.js";
 export { createStorageI18nReact } from "./createStorageI18nReact.js";

@@ -380,6 +380,7 @@ export const { LocaleProvider, useLocale } = createI18nReact(LOCALES, {
 import {
   createHashI18nReact,     // URL hash (#ja)
   createSearchI18nReact,   // URL search param (?lang=ja)
+  createPathnameI18nReact, // URL pathname prefix (/ja/...)
   createStorageI18nReact,  // localStorage
 } from 'canopy-i18n/react';
 
@@ -389,6 +390,7 @@ export const { LocaleProvider, useLocale, useBindLocale } =
 
 Options:
 - `createSearchI18nReact(LOCALES, { param })` — defaults to `lang`.
+- `createPathnameI18nReact(LOCALES, { basePath })` — basePath defaults to `""` (locale at the first path segment). Set to e.g. `"/app"` to read locale from the segment after the prefix.
 - `createStorageI18nReact(LOCALES, { key })` — defaults to `canopy-i18n-locale`.
 
 All wrappers operate in source-driven mode: render `<LocaleProvider>` with no props.

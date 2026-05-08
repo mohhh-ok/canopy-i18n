@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
 import { HashDemo } from "./patterns/hash/Demo";
+import { PathnameDemo } from "./patterns/pathname/Demo";
 import { SearchParamDemo } from "./patterns/searchParam/Demo";
 import { StorageDemo } from "./patterns/storage/Demo";
 import { Link, useCurrentPath } from "./shared/router";
@@ -11,12 +12,15 @@ const ROUTES: ReadonlyArray<{
 }> = [
   { path: "/hash", label: "URL hash", demo: <HashDemo /> },
   { path: "/search", label: "URL search", demo: <SearchParamDemo /> },
+  { path: "/pathname", label: "URL pathname", demo: <PathnameDemo /> },
   { path: "/storage", label: "localStorage", demo: <StorageDemo /> },
 ];
 
 export default function App() {
   const path = useCurrentPath();
-  const current = ROUTES.find((r) => r.path === path) ?? ROUTES[0]!;
+  const current =
+    ROUTES.find((r) => path === r.path || path.startsWith(`${r.path}/`)) ??
+    ROUTES[0]!;
 
   return (
     <div
@@ -29,12 +33,10 @@ export default function App() {
       }}
     >
       <header style={{ marginBottom: "24px" }}>
-        <h1 style={{ margin: "0 0 6px 0" }}>
-          Canopy i18n — <code>useLocaleSource</code> Patterns
-        </h1>
+        <h1 style={{ margin: "0 0 6px 0" }}>Canopy i18n — Source Wrappers</h1>
         <p style={{ margin: 0, color: "#666" }}>
-          createI18nReact の factory option <code>useLocaleSource</code>{" "}
-          をどんなソースに繋ぐかのパターン集
+          Built-in <code>create*I18nReact</code> wrappers that bundle a locale
+          source (URL hash / search param / localStorage)
         </p>
       </header>
 
