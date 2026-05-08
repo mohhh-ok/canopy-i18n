@@ -408,6 +408,7 @@ import {
   createSearchI18nReact,   // URL search param (?lang=ja, configurable via { param })
   createPathnameI18nReact, // URL pathname prefix (/ja/..., configurable via { basePath })
   createStorageI18nReact,  // localStorage (configurable via { key })
+  createCookieI18nReact,   // Cookie (configurable via { key, maxAge, path, sameSite })
 } from 'canopy-i18n/react';
 
 export const { LocaleProvider, useLocale, useBindLocale } =

@@ -6,6 +6,8 @@ export type {
   ResolveServerLocale,
   UseLocaleSource,
 } from "./createI18nReact.js";
+export { createCookieI18nReact } from "./createCookieI18nReact.js";
+export type { CreateCookieI18nReactOptions } from "./createCookieI18nReact.js";
 export { createHashI18nReact } from "./createHashI18nReact.js";
 export { createPathnameI18nReact } from "./createPathnameI18nReact.js";
 export type { CreatePathnameI18nReactOptions } from "./createPathnameI18nReact.js";

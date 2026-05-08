@@ -1,4 +1,5 @@
 import type { ReactElement } from "react";
+import { CookieDemo } from "./patterns/cookie/Demo";
 import { HashDemo } from "./patterns/hash/Demo";
 import { PathnameDemo } from "./patterns/pathname/Demo";
 import { SearchParamDemo } from "./patterns/searchParam/Demo";
@@ -14,6 +15,7 @@ const ROUTES: ReadonlyArray<{
   { path: "/search", label: "URL search", demo: <SearchParamDemo /> },
   { path: "/pathname", label: "URL pathname", demo: <PathnameDemo /> },
   { path: "/storage", label: "localStorage", demo: <StorageDemo /> },
+  { path: "/cookie", label: "Cookie", demo: <CookieDemo /> },
 ];
 
 export default function App() {
@@ -36,7 +38,7 @@ export default function App() {
         <h1 style={{ margin: "0 0 6px 0" }}>Canopy i18n — Source Wrappers</h1>
         <p style={{ margin: 0, color: "#666" }}>
           Built-in <code>create*I18nReact</code> wrappers that bundle a locale
-          source (URL hash / search param / localStorage)
+          source (URL hash / search param / pathname / localStorage / cookie)
         </p>
       </header>
 

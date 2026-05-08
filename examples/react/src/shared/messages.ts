@@ -81,4 +81,21 @@ export const commonMsgs = {
       zh: "保存在 localStorage 中，刷新后仍会保留",
     },
   }),
+  cookie: i18n({
+    title: {
+      en: "5. Cookie",
+      ja: "5. Cookie",
+      zh: "5. Cookie",
+    },
+    description: {
+      en: "Create cookie-driven i18n with createCookieI18nReact(LOCALES).",
+      ja: "createCookieI18nReact(LOCALES) で Cookie 連動の i18n を生成。",
+      zh: "使用 createCookieI18nReact(LOCALES) 创建与 Cookie 联动的 i18n。",
+    },
+    hint: {
+      en: "Saved as a cookie, kept after reload",
+      ja: "Cookie に保存されるのでリロード後も保持される",
+      zh: "保存在 Cookie 中，刷新后仍会保留",
+    },
+  }),
 };
