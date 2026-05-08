@@ -1,19 +1,20 @@
-import { useLocale } from "./i18n";
-import { type Locale, LOCALES } from "./types";
+import { type Locale, LOCALES } from "../types";
 
-export function LanguageSwitcher() {
-  const { locale, setLocale } = useLocale();
+interface Props {
+  locale: Locale;
+  setLocale: (locale: Locale) => void;
+}
 
+export function Switcher({ locale, setLocale }: Props) {
   return (
     <select
       value={locale}
       onChange={(e) => setLocale(e.target.value as Locale)}
       style={{
-        padding: "8px 16px",
+        padding: "6px 12px",
         fontSize: "14px",
         borderRadius: "6px",
         border: "1px solid #ddd",
-        cursor: "pointer",
         background: "white",
       }}
     >
