@@ -460,17 +460,46 @@ export default function LocaleLayout({ children }: { children: React.ReactNode }
 
 ```tsx
 // app/[locale]/page.tsx (Server Component — no "use client")
-import { bindLocale } from '../i18n';
+import type { LocalePageProps } from 'canopy-i18n/next';
+import { bindLocale, LOCALES } from '../i18n';
 import { appI18n } from '../messages';
 
 export default async function Page({
   params,
-}: {
-  params: Promise<{ locale: 'en' | 'ja' }>;
-}) {
-  const { locale } = await params;
-  const m = bindLocale({ appI18n }, locale);
+}: LocalePageProps<typeof LOCALES>) {
+  const m = await bindLocale({ appI18n }, params);
   return <h1>{m.appI18n.title()}</h1>;
+}
+```
+
+`bindLocale` accepts either a locale string or the `params` Promise from a page/layout. With the Promise form, it awaits `params` and binds in one step — no need to write the locale union by hand.
+
+### Custom param key
+
+The dynamic segment defaults to `[locale]`. If you prefer `[lang]` or any other name, pass `paramKey` to the factory — `generateStaticParams`, `LocalePageProps`, and the `params` reader inside `LocaleProvider` all follow it.
+
+```ts
+// app/i18n.ts — segment is [lang]
+export const LOCALES = ['en', 'ja'] as const;
+
+export const {
+  bindLocale,
+  generateStaticParams,
+  LocaleProvider,
+  // ...
+} = createI18nNext(LOCALES, { paramKey: 'lang' });
+```
+
+```tsx
+// app/[lang]/page.tsx
+import type { LocalePageProps } from 'canopy-i18n/next';
+import { bindLocale, LOCALES } from '../i18n';
+
+export default async function Page({
+  params,
+}: LocalePageProps<typeof LOCALES, 'lang'>) {
+  const m = await bindLocale({ appI18n }, params);
+  // ...
 }
 ```
 
@@ -498,7 +527,7 @@ export function Switcher() {
 const {
   locales,
   i18n,                  // ChainBuilder factory (server + client)
-  bindLocale,            // (messages, locale) => bound messages — server-callable
+  bindLocale,            // (messages, locale | params) — string is sync, Promise<{locale}> is async
   generateStaticParams,  // () => Array<{ locale }> — for [locale] segment SSG
   LocaleProvider,        // reads params.locale, pushes via router on change
   LocaleLink,            // <LocaleLink locale="ja">: swaps the locale segment in the path

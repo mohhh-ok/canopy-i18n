@@ -32,16 +32,18 @@ export interface ClientLocaleProviderProps {
   children: ReactNode;
   locales: readonly string[];
   fallbackLocale?: string;
+  paramKey?: string;
 }
 
 export function ClientLocaleProvider(
-  { children, locales, fallbackLocale }: ClientLocaleProviderProps,
+  { children, locales, fallbackLocale, paramKey = "locale" }:
+    ClientLocaleProviderProps,
 ) {
-  const params = useParams<{ locale?: string }>();
+  const params = useParams<Record<string, string | undefined>>();
   const router = useRouter();
   const pathname = usePathname();
 
-  const locale = params?.locale ?? fallbackLocale ?? locales[0]!;
+  const locale = params?.[paramKey] ?? fallbackLocale ?? locales[0]!;
 
   const setLocale = useCallback(
     (next: string) => {

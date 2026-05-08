@@ -34,14 +34,40 @@ export interface LocaleContextValue<Locale extends string> {
   locales: readonly Locale[];
 }
 
-export interface I18nNextInstance<L extends readonly string[]> {
+export type LocalePageParams<
+  L extends readonly string[],
+  K extends string = "locale",
+> = Promise<{ [P in K]: L[number] }>;
+
+export type LocalePageProps<
+  L extends readonly string[],
+  K extends string = "locale",
+> = {
+  params: LocalePageParams<L, K>;
+};
+
+export interface CreateI18nNextOptions<K extends string = string> {
+  paramKey?: K;
+}
+
+export interface I18nNextInstance<
+  L extends readonly string[],
+  K extends string = "locale",
+> {
   locales: L;
+  paramKey: K;
   i18n: ChainBuilder<L, {}>["add"];
-  bindLocale: <T extends object>(
-    messages: T & DeepLocaleConstraint<T, L[number]>,
-    locale: L[number],
-  ) => DeepUnwrap<T>;
-  generateStaticParams: () => Array<{ locale: L[number] }>;
+  bindLocale: {
+    <T extends object>(
+      messages: T & DeepLocaleConstraint<T, L[number]>,
+      locale: L[number],
+    ): DeepUnwrap<T>;
+    <T extends object>(
+      messages: T & DeepLocaleConstraint<T, L[number]>,
+      params: LocalePageParams<L, K>,
+    ): Promise<DeepUnwrap<T>>;
+  };
+  generateStaticParams: () => Array<{ [P in K]: L[number] }>;
   LocaleProvider: (props: NextLocaleProviderProps<L[number]>) => ReactElement;
   LocaleLink: (props: LocaleLinkProps<L[number]>) => ReactElement;
   useLocale: () => LocaleContextValue<L[number]>;
@@ -50,14 +76,24 @@ export interface I18nNextInstance<L extends readonly string[]> {
   ) => DeepUnwrap<T>;
 }
 
-export function createI18nNext<const L extends readonly string[]>(
+export function createI18nNext<
+  const L extends readonly string[],
+  const K extends string = "locale",
+>(
   locales: L,
-): I18nNextInstance<L> {
+  options?: CreateI18nNextOptions<K>,
+): I18nNextInstance<L, K> {
+  const paramKey = (options?.paramKey ?? "locale") as K;
+
   function LocaleProvider(
     { children, fallbackLocale }: NextLocaleProviderProps<L[number]>,
   ) {
     return (
-      <ClientLocaleProvider locales={locales} fallbackLocale={fallbackLocale}>
+      <ClientLocaleProvider
+        locales={locales}
+        fallbackLocale={fallbackLocale}
+        paramKey={paramKey}
+      >
         {children}
       </ClientLocaleProvider>
     );
@@ -68,15 +104,29 @@ export function createI18nNext<const L extends readonly string[]>(
 
   return {
     locales,
+    paramKey,
     i18n,
-    bindLocale: ((messages, locale) =>
-      plainBindLocale(messages, locale)) as I18nNextInstance<L>["bindLocale"],
+    bindLocale: ((messages: object, localeOrParams: unknown) => {
+      if (
+        localeOrParams &&
+        typeof (localeOrParams as { then?: unknown }).then === "function"
+      ) {
+        return (localeOrParams as Promise<Record<string, string>>).then(
+          (resolved) => plainBindLocale(messages, resolved[paramKey] as string),
+        );
+      }
+      return plainBindLocale(messages, localeOrParams as string);
+    }) as I18nNextInstance<L, K>["bindLocale"],
     generateStaticParams: () =>
-      locales.map((locale) => ({ locale: locale as L[number] })),
+      locales.map(
+        (locale) => ({ [paramKey]: locale }) as { [P in K]: L[number] },
+      ),
     LocaleProvider,
-    LocaleLink: ClientLocaleLink as unknown as I18nNextInstance<L>["LocaleLink"],
-    useLocale: useLocaleClient as unknown as I18nNextInstance<L>["useLocale"],
+    LocaleLink:
+      ClientLocaleLink as unknown as I18nNextInstance<L, K>["LocaleLink"],
+    useLocale:
+      useLocaleClient as unknown as I18nNextInstance<L, K>["useLocale"],
     useBindLocale:
-      useBindLocaleClient as unknown as I18nNextInstance<L>["useBindLocale"],
+      useBindLocaleClient as unknown as I18nNextInstance<L, K>["useBindLocale"],
   };
 }

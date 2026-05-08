@@ -453,7 +453,7 @@ export const LOCALES = ['en', 'ja'] as const;
 
 export const {
   i18n,
-  bindLocale,            // (messages, locale) => bound — usable on the server
+  bindLocale,            // (messages, locale | params) — string is sync, Promise<{locale}> is async
   generateStaticParams,  // () => [{ locale: 'en' }, { locale: 'ja' }]
   LocaleProvider,
   LocaleLink,
@@ -475,18 +475,26 @@ export default function LocaleLayout({ children }: { children: React.ReactNode }
 
 ```tsx
 // app/[locale]/page.tsx — Server Component (no "use client")
-import { bindLocale } from '../i18n';
+import type { LocalePageProps } from 'canopy-i18n/next';
+import { bindLocale, LOCALES } from '../i18n';
 import { appI18n } from '../messages';
 
 export default async function Page({
   params,
-}: {
-  params: Promise<{ locale: 'en' | 'ja' }>;
-}) {
-  const { locale } = await params;
-  const m = bindLocale({ appI18n }, locale);
+}: LocalePageProps<typeof LOCALES>) {
+  const m = await bindLocale({ appI18n }, params);
   return <h1>{m.appI18n.title()}</h1>;
 }
+```
+
+`bindLocale` is overloaded: pass a locale string for the sync form, or pass the page's `params` Promise to get an async form that awaits and binds in one step. `LocalePageProps<typeof LOCALES>` types `{ params: Promise<{ locale }> }` from the same `LOCALES` you registered with the factory, so the locale union never has to be hand-written.
+
+To use a different segment name (e.g. `[lang]`), pass `paramKey` to the factory:
+
+```ts
+createI18nNext(LOCALES, { paramKey: 'lang' });
+// LocalePageProps<typeof LOCALES, 'lang'> → { params: Promise<{ lang }> }
+// generateStaticParams() → [{ lang: 'en' }, { lang: 'ja' }]
 ```
 
 ```tsx
@@ -539,7 +547,12 @@ export type { LocaleContextValue, LocaleProviderProps } from 'canopy-i18n/react'
 
 // Next.js subpath (App Router)
 export { createI18nNext, swapLocaleInPath } from 'canopy-i18n/next';
-export type { NextLocaleProviderProps, LocaleLinkProps } from 'canopy-i18n/next';
+export type {
+  NextLocaleProviderProps,
+  LocaleLinkProps,
+  LocalePageParams,
+  LocalePageProps,
+} from 'canopy-i18n/next';
 ```
 
 ### Type Details
