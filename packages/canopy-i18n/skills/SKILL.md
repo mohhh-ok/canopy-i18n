@@ -359,6 +359,19 @@ import { LocaleProvider } from './i18n';
 
 Use uncontrolled for simple apps. Use controlled when the locale lives outside React (URL segments like `/[locale]/...`, cookies, etc.).
 
+**Source-driven mode.** `createI18nReact` accepts a factory option `useLocaleSource` (any hook returning `Locale | undefined`). The Provider reads locale from this hook on every render; `setLocale` from `useLocale()` calls `onLocaleChange` (also a factory option) instead of mutating internal state. This is the natural fit for external stores, URL hooks, or any reactive source.
+
+```tsx
+export const { LocaleProvider, useLocale } = createI18nReact(LOCALES, {
+  useLocaleSource: () => useMyStore((s) => s.locale),
+  onLocaleChange: (l) => useMyStore.getState().setLocale(l),
+});
+
+<LocaleProvider>
+  <App />
+</LocaleProvider>
+```
+
 ### Components
 
 ```tsx

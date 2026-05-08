@@ -387,6 +387,19 @@ import { LocaleProvider } from './i18n';
 
 In controlled mode, `setLocale` from `useLocale()` calls your `onLocaleChange` handler instead of mutating internal state.
 
+`createI18nReact` also accepts a factory-level `useLocaleSource` for source-driven locale (e.g. external store, URL hook, cookie). When set, the Provider reads the locale from this hook and `setLocale` calls `onLocaleChange` instead of mutating internal state:
+
+```tsx
+export const { LocaleProvider, useLocale } = createI18nReact(LOCALES, {
+  useLocaleSource: () => useMyStore((s) => s.locale),
+  onLocaleChange: (l) => useMyStore.getState().setLocale(l),
+});
+
+<LocaleProvider>
+  <App />
+</LocaleProvider>
+```
+
 ```tsx
 // App.tsx
 import { appI18n, useBindLocale, useLocale } from './i18n';

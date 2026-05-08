@@ -59,7 +59,13 @@ export type LocaleProviderProps<Locale extends string> =
       onLocaleChange: (locale: Locale) => void;
       defaultLocale?: undefined;
     }
+    | { defaultLocale?: undefined; locale?: undefined; onLocaleChange?: undefined }
   );
+
+export interface CreateI18nReactOptions<Locale extends string = string> {
+  useLocaleSource?: UseLocaleSource<Locale>;
+  onLocaleChange?: (locale: Locale) => void;
+}
 
 export interface I18nReactInstance<L extends readonly string[]> {
   locales: L;
@@ -73,20 +79,31 @@ export interface I18nReactInstance<L extends readonly string[]> {
 
 export function createI18nReact<const L extends readonly string[]>(
   locales: L,
+  options?: CreateI18nReactOptions<L[number]>,
 ): I18nReactInstance<L> {
   const Context = createContext<LocaleContextValue<L[number]> | undefined>(
     undefined,
   );
+  const factorySource = options?.useLocaleSource;
+  const factoryOnChange = options?.onLocaleChange;
 
   function LocaleProvider(props: LocaleProviderProps<L[number]>) {
     const { children } = props;
+    const sourceLocale = factorySource?.();
     const isControlled = props.locale !== undefined;
     const [internalLocale, setInternalLocale] = useState<L[number]>(
-      (props.defaultLocale ?? props.locale)!,
+      (props.defaultLocale ?? props.locale ?? sourceLocale ?? locales[0])!,
     );
 
-    const locale = isControlled ? props.locale! : internalLocale;
+    const locale = factorySource
+      ? (sourceLocale ?? locales[0]!) as L[number]
+      : isControlled
+      ? props.locale!
+      : internalLocale;
+
     const setLocale = (next: L[number]) => {
+      factoryOnChange?.(next);
+      if (factorySource) return;
       if (isControlled) {
         props.onLocaleChange!(next);
       } else {
