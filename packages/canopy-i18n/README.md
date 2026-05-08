@@ -453,7 +453,7 @@ const {
 
 - `useBindLocale(msgsDef)` is memoized per `(msgsDef, locale)` pair.
 - The `Locale` type is derived from the `LOCALES` tuple. Passing a `ChainBuilder` whose locales differ from the Provider's locales is rejected at compile time.
-- No built-in persistence. Use uncontrolled mode for in-memory state, or controlled mode to wire `localStorage` / URL / cookies / a router.
+- `createI18nReact` itself has no built-in persistence. Use a built-in wrapper (`createHash/Search/Pathname/Storage/CookieI18nReact`) for common sources, or pass your own `useLocaleSource` / `onLocaleChange` for anything else.
 - React is a `peerDependency` (`>=18`). Non-React users can ignore the `/react` subpath entirely.
 
 ## Repository
