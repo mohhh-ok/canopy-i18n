@@ -533,6 +533,32 @@ export function Switcher() {
 }
 ```
 
+### Custom locale source (server-side)
+
+For locales not derived from page params (cookies, headers, custom resolvers), pass `resolveServerLocale` to the factory. It receives whatever you pass as the second argument to `bindLocale` and returns the locale string (sync or async).
+
+```ts
+// app/i18n.ts
+import { cookies } from 'next/headers';
+import { createI18nNext } from 'canopy-i18n/next';
+
+export const LOCALES = ['en', 'ja'] as const;
+
+export const { bindLocale, /* ... */ } = createI18nNext(LOCALES, {
+  resolveServerLocale: async () => {
+    const store = await cookies();
+    return store.get('locale')?.value;
+  },
+});
+```
+
+```tsx
+// app/page.tsx
+const m = await bindLocale({ appI18n }, undefined);
+```
+
+The default `resolveServerLocale` reads `params[paramKey]`, so passing the page `params` Promise still works as before.
+
 ### What you get
 
 ```ts

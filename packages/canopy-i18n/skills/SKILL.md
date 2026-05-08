@@ -501,6 +501,21 @@ createI18nNext(LOCALES, { paramKey: 'lang', pathPrefix: '/custom' });
 
 `pathPrefix` defaults to `"/"`. Both options are independent and can be combined.
 
+To resolve the locale from something other than page params (cookies, headers, custom store), pass `resolveServerLocale`:
+
+```ts
+import { cookies } from 'next/headers';
+
+createI18nNext(LOCALES, {
+  resolveServerLocale: async () => (await cookies()).get('locale')?.value,
+});
+
+// then:
+const m = await bindLocale({ appI18n }, undefined);
+```
+
+The default `resolveServerLocale` reads `params[paramKey]`, so passing the page `params` Promise still works as before.
+
 `setLocale` from `useLocale()` accepts an optional `{ mode: 'push' | 'replace' }` second argument (default `'push'`). Use `'replace'` to avoid adding a history entry on locale change:
 
 ```tsx

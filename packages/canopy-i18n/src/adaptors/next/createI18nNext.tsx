@@ -5,6 +5,7 @@ import { type ChainBuilder, createI18n } from "../../chainBuilder.js";
 import type {
   DeepLocaleConstraint,
   DeepUnwrap,
+  ResolveServerLocale,
 } from "../react/createI18nReact.js";
 import {
   ClientLocaleLink,
@@ -13,11 +14,22 @@ import {
   swapLocaleInPath,
   useBindLocaleClient,
   useLocaleClient,
+  type UseLocaleSource,
 } from "./_client.js";
 
-export type { SetLocaleOptions };
+export type { ResolveServerLocale, SetLocaleOptions, UseLocaleSource };
 
 export { swapLocaleInPath };
+
+export function createParamsResolveServerLocale(
+  paramKey: string,
+): ResolveServerLocale {
+  return async (input) => {
+    if (input == null) return undefined;
+    const resolved = await (input as Promise<Record<string, string>>);
+    return resolved?.[paramKey];
+  };
+}
 
 export interface NextLocaleProviderProps<Locale extends string> {
   children: ReactNode;
@@ -53,6 +65,7 @@ export type LocalePageProps<
 export interface CreateI18nNextOptions<K extends string = string> {
   paramKey?: K;
   pathPrefix?: string;
+  resolveServerLocale?: ResolveServerLocale;
 }
 
 export interface I18nNextInstance<
@@ -71,6 +84,10 @@ export interface I18nNextInstance<
     <T extends object>(
       messages: T & DeepLocaleConstraint<T, L[number]>,
       params: LocalePageParams<L, K>,
+    ): Promise<DeepUnwrap<T>>;
+    <T extends object>(
+      messages: T & DeepLocaleConstraint<T, L[number]>,
+      input: unknown,
     ): Promise<DeepUnwrap<T>>;
   };
   generateStaticParams: () => Array<{ [P in K]: L[number] }>;
@@ -91,6 +108,8 @@ export function createI18nNext<
 ): I18nNextInstance<L, K> {
   const paramKey = (options?.paramKey ?? "locale") as K;
   const pathPrefix = options?.pathPrefix ?? "/";
+  const resolveServerLocale =
+    options?.resolveServerLocale ?? createParamsResolveServerLocale(paramKey);
 
   function LocaleProvider(
     { children, fallbackLocale }: NextLocaleProviderProps<L[number]>,
@@ -115,16 +134,20 @@ export function createI18nNext<
     paramKey,
     pathPrefix,
     i18n,
-    bindLocale: ((messages: object, localeOrParams: unknown) => {
+    bindLocale: ((messages: object, input: unknown) => {
+      if (typeof input === "string") {
+        return plainBindLocale(messages, input);
+      }
+      const resolved = resolveServerLocale(input);
       if (
-        localeOrParams &&
-        typeof (localeOrParams as { then?: unknown }).then === "function"
+        resolved &&
+        typeof (resolved as { then?: unknown }).then === "function"
       ) {
-        return (localeOrParams as Promise<Record<string, string>>).then(
-          (resolved) => plainBindLocale(messages, resolved[paramKey] as string),
+        return (resolved as Promise<string | undefined>).then((locale) =>
+          plainBindLocale(messages, locale as string),
         );
       }
-      return plainBindLocale(messages, localeOrParams as string);
+      return plainBindLocale(messages, resolved as string);
     }) as I18nNextInstance<L, K>["bindLocale"],
     generateStaticParams: () =>
       locales.map(

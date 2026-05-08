@@ -42,6 +42,14 @@ export interface LocaleContextValue<Locale extends string> {
   setLocale: (locale: Locale) => void;
 }
 
+export type UseLocaleSource<Locale extends string = string> = () =>
+  | Locale
+  | undefined;
+
+export type ResolveServerLocale<Locale extends string = string> = (
+  input: unknown,
+) => Locale | undefined | Promise<Locale | undefined>;
+
 export type LocaleProviderProps<Locale extends string> =
   & { children: ReactNode }
   & (

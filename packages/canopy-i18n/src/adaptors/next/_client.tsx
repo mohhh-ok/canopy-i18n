@@ -11,6 +11,9 @@ import {
   useMemo,
 } from "react";
 import { bindLocale } from "../../bindLocale.js";
+import type { UseLocaleSource } from "../react/createI18nReact.js";
+
+export type { UseLocaleSource };
 
 export interface SetLocaleOptions {
   mode?: "push" | "replace";
@@ -40,11 +43,19 @@ export function swapLocaleInPath(
   return parts.join("/") || "/";
 }
 
+export function createParamsLocaleSource(paramKey: string): UseLocaleSource {
+  return () => {
+    const params = useParams<Record<string, string | undefined>>();
+    return params?.[paramKey];
+  };
+}
+
 export interface ClientLocaleProviderProps {
   children: ReactNode;
   locales: readonly string[];
   fallbackLocale?: string;
   paramKey?: string;
+  useLocaleSource?: UseLocaleSource;
   pathPrefix?: string;
 }
 
@@ -54,14 +65,18 @@ export function ClientLocaleProvider(
     locales,
     fallbackLocale,
     paramKey = "locale",
+    useLocaleSource,
     pathPrefix = "/",
   }: ClientLocaleProviderProps,
 ) {
-  const params = useParams<Record<string, string | undefined>>();
   const router = useRouter();
   const pathname = usePathname();
+  const params = useParams<Record<string, string | undefined>>();
 
-  const locale = params?.[paramKey] ?? fallbackLocale ?? locales[0]!;
+  const sourceLocale = useLocaleSource
+    ? useLocaleSource()
+    : params?.[paramKey];
+  const locale = sourceLocale ?? fallbackLocale ?? locales[0]!;
 
   const setLocale = useCallback(
     (next: string, options?: SetLocaleOptions) => {
