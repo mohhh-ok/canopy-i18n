@@ -1,31 +1,13 @@
-import { useSyncExternalStore } from "react";
 import { createI18nReact } from "canopy-i18n/react";
-import { commonMsgs } from "../i18n";
-import { type Locale, LOCALES } from "../types";
-import { Card } from "./Card";
-import { Switcher } from "./Switcher";
-
-function getHashLocale(): Locale | undefined {
-  const hash = window.location.hash.slice(1);
-  return (LOCALES as readonly string[]).includes(hash)
-    ? (hash as Locale)
-    : undefined;
-}
-
-function subscribeHash(callback: () => void) {
-  window.addEventListener("hashchange", callback);
-  return () => window.removeEventListener("hashchange", callback);
-}
-
-function useHashLocale(): Locale | undefined {
-  return useSyncExternalStore(subscribeHash, getHashLocale, () => undefined);
-}
+import { Card } from "../../shared/Card";
+import { commonMsgs } from "../../shared/messages";
+import { Switcher } from "../../shared/Switcher";
+import { LOCALES } from "../../types";
+import { setHashLocale, useHashLocale } from "./source";
 
 const { LocaleProvider, useLocale, useBindLocale } = createI18nReact(LOCALES, {
   useLocaleSource: useHashLocale,
-  onLocaleChange: (locale) => {
-    window.location.hash = locale;
-  },
+  onLocaleChange: setHashLocale,
 });
 
 function Inner() {

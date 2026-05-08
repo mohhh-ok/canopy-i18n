@@ -1,7 +1,7 @@
-import { AutoDetectDemo } from "./patterns/AutoDetectDemo";
-import { HashDemo } from "./patterns/HashDemo";
-import { SearchParamDemo } from "./patterns/SearchParamDemo";
-import { StorageDemo } from "./patterns/StorageDemo";
+import { AutoDetectDemo } from "./patterns/autoDetect/Demo";
+import { HashDemo } from "./patterns/hash/Demo";
+import { SearchParamDemo } from "./patterns/searchParam/Demo";
+import { StorageDemo } from "./patterns/storage/Demo";
 
 export default function App() {
   return (
