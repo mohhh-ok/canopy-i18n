@@ -1,23 +1,43 @@
 "use client";
 
-import { LocaleLink, useBindLocale, useLocale } from "../i18n";
+import { useState } from "react";
+import { useBindLocale, useLocale } from "../i18n";
 import { appI18n } from "../messages";
 
 export function ClientSection() {
   const m = useBindLocale({ appI18n });
-  const { locale } = useLocale();
+  const { locale, setLocale, locales } = useLocale();
+  type Locale = (typeof locales)[number];
+
+  const [name, setName] = useState("Hanako");
 
   return (
     <section>
       <h2>Client Section (useBindLocale)</h2>
-      <p>{m.appI18n.greeting({ name: "Hanako" })}</p>
-      <p>
-        Current locale: <strong>{locale}</strong>
-      </p>
-      <nav style={{ display: "flex", gap: "0.5rem" }}>
-        <LocaleLink locale="en">English</LocaleLink>
-        <LocaleLink locale="ja">日本語</LocaleLink>
-      </nav>
+      <p>{m.appI18n.greeting({ name })}</p>
+      <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+        <label>
+          Name:{" "}
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </label>
+        <label>
+          Locale:{" "}
+          <select
+            value={locale}
+            onChange={(e) => setLocale(e.target.value as Locale)}
+          >
+            {locales.map((l) => (
+              <option key={l} value={l}>
+                {l}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
     </section>
   );
 }
