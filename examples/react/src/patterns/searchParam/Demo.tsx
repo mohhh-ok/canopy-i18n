@@ -1,14 +1,11 @@
-import { createI18nReact } from "canopy-i18n/react";
+import { createSearchI18nReact } from "canopy-i18n/react";
 import { Card } from "../../shared/Card";
 import { commonMsgs } from "../../shared/messages";
 import { Switcher } from "../../shared/Switcher";
 import { LOCALES } from "../../types";
-import { setSearchLocale, useSearchLocale } from "./source";
 
-const { LocaleProvider, useLocale, useBindLocale } = createI18nReact(LOCALES, {
-  useLocaleSource: useSearchLocale,
-  onLocaleChange: setSearchLocale,
-});
+const { LocaleProvider, useLocale, useBindLocale } =
+  createSearchI18nReact(LOCALES);
 
 function Inner() {
   const { locale, setLocale } = useLocale();
@@ -28,7 +25,7 @@ export function SearchParamDemo() {
   return (
     <Card
       title="2. URL search param"
-      description="useLocaleSource で ?lang= を購読し、pushState で書き戻す。"
+      description="createSearchI18nReact(LOCALES) で ?lang= 連動の i18n を生成。"
     >
       <LocaleProvider>
         <Inner />

@@ -1,14 +1,11 @@
-import { createI18nReact } from "canopy-i18n/react";
+import { createHashI18nReact } from "canopy-i18n/react";
 import { Card } from "../../shared/Card";
 import { commonMsgs } from "../../shared/messages";
 import { Switcher } from "../../shared/Switcher";
 import { LOCALES } from "../../types";
-import { setHashLocale, useHashLocale } from "./source";
 
-const { LocaleProvider, useLocale, useBindLocale } = createI18nReact(LOCALES, {
-  useLocaleSource: useHashLocale,
-  onLocaleChange: setHashLocale,
-});
+const { LocaleProvider, useLocale, useBindLocale } =
+  createHashI18nReact(LOCALES);
 
 function Inner() {
   const { locale, setLocale } = useLocale();
@@ -28,7 +25,7 @@ export function HashDemo() {
   return (
     <Card
       title="1. URL hash"
-      description="useLocaleSource で URL ハッシュを購読し、setLocale でハッシュを書き換える。"
+      description="createHashI18nReact(LOCALES) で URL ハッシュ連動の i18n を生成。"
     >
       <LocaleProvider>
         <Inner />

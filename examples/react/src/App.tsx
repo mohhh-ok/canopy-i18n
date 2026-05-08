@@ -1,5 +1,4 @@
 import type { ReactElement } from "react";
-import { AutoDetectDemo } from "./patterns/autoDetect/Demo";
 import { HashDemo } from "./patterns/hash/Demo";
 import { SearchParamDemo } from "./patterns/searchParam/Demo";
 import { StorageDemo } from "./patterns/storage/Demo";
@@ -13,7 +12,6 @@ const ROUTES: ReadonlyArray<{
   { path: "/hash", label: "URL hash", demo: <HashDemo /> },
   { path: "/search", label: "URL search", demo: <SearchParamDemo /> },
   { path: "/storage", label: "localStorage", demo: <StorageDemo /> },
-  { path: "/auto", label: "Auto detect", demo: <AutoDetectDemo /> },
 ];
 
 export default function App() {

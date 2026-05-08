@@ -400,6 +400,21 @@ export const { LocaleProvider, useLocale } = createI18nReact(LOCALES, {
 </LocaleProvider>
 ```
 
+For common sources, `canopy-i18n/react` ships ready-made factories. Each returns the same shape as `createI18nReact` and operates in source-driven mode:
+
+```tsx
+import {
+  createHashI18nReact,     // URL hash (#ja)
+  createSearchI18nReact,   // URL search param (?lang=ja, configurable via { param })
+  createStorageI18nReact,  // localStorage (configurable via { key })
+} from 'canopy-i18n/react';
+
+export const { LocaleProvider, useLocale, useBindLocale } =
+  createHashI18nReact(LOCALES);
+
+// Render <LocaleProvider> with no props.
+```
+
 ```tsx
 // App.tsx
 import { appI18n, useBindLocale, useLocale } from './i18n';

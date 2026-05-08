@@ -372,6 +372,27 @@ export const { LocaleProvider, useLocale } = createI18nReact(LOCALES, {
 </LocaleProvider>
 ```
 
+### Built-in source wrappers
+
+`canopy-i18n/react` ships ready-made factories that wire `useLocaleSource` and `onLocaleChange` to common sources. Each returns the same shape as `createI18nReact`.
+
+```tsx
+import {
+  createHashI18nReact,     // URL hash (#ja)
+  createSearchI18nReact,   // URL search param (?lang=ja)
+  createStorageI18nReact,  // localStorage
+} from 'canopy-i18n/react';
+
+export const { LocaleProvider, useLocale, useBindLocale } =
+  createHashI18nReact(LOCALES);
+```
+
+Options:
+- `createSearchI18nReact(LOCALES, { param })` — defaults to `lang`.
+- `createStorageI18nReact(LOCALES, { key })` — defaults to `canopy-i18n-locale`.
+
+All wrappers operate in source-driven mode: render `<LocaleProvider>` with no props.
+
 ### Components
 
 ```tsx
@@ -450,7 +471,7 @@ const {
 
 Notes:
 - React is a `peerDependency` (`>=18`). Non-React users do not need to install React.
-- No persistence (localStorage, cookies, URL) is built in — wire it up yourself, or use the `canopy-i18n/next` subpath for URL-based routing.
+- For common sources (URL hash, URL search param, localStorage), use the built-in wrappers above. For anything else, pass your own `useLocaleSource` / `onLocaleChange` to `createI18nReact`. For Next.js URL-based routing, use the `canopy-i18n/next` subpath.
 
 ---
 

@@ -1,14 +1,13 @@
-import { createI18nReact } from "canopy-i18n/react";
+import { createStorageI18nReact } from "canopy-i18n/react";
 import { Card } from "../../shared/Card";
 import { commonMsgs } from "../../shared/messages";
 import { Switcher } from "../../shared/Switcher";
 import { LOCALES } from "../../types";
-import { setStorageLocale, useStorageLocale } from "./source";
 
-const { LocaleProvider, useLocale, useBindLocale } = createI18nReact(LOCALES, {
-  useLocaleSource: useStorageLocale,
-  onLocaleChange: setStorageLocale,
-});
+const { LocaleProvider, useLocale, useBindLocale } = createStorageI18nReact(
+  LOCALES,
+  { key: "canopy-i18n-example-locale" },
+);
 
 function Inner() {
   const { locale, setLocale } = useLocale();
@@ -28,7 +27,7 @@ export function StorageDemo() {
   return (
     <Card
       title="3. localStorage"
-      description="useLocaleSource で localStorage を購読し、onLocaleChange で書き戻す。"
+      description="createStorageI18nReact(LOCALES) で localStorage 連動の i18n を生成。"
     >
       <LocaleProvider>
         <Inner />
