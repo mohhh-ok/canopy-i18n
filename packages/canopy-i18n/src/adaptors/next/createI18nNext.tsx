@@ -9,10 +9,13 @@ import type {
 import {
   ClientLocaleLink,
   ClientLocaleProvider,
+  type SetLocaleOptions,
   swapLocaleInPath,
   useBindLocaleClient,
   useLocaleClient,
 } from "./_client.js";
+
+export type { SetLocaleOptions };
 
 export { swapLocaleInPath };
 
@@ -30,8 +33,9 @@ export interface LocaleLinkProps<Locale extends string>
 
 export interface LocaleContextValue<Locale extends string> {
   locale: Locale;
-  setLocale: (locale: Locale) => void;
+  setLocale: (locale: Locale, options?: SetLocaleOptions) => void;
   locales: readonly Locale[];
+  pathPrefix: string;
 }
 
 export type LocalePageParams<
@@ -48,6 +52,7 @@ export type LocalePageProps<
 
 export interface CreateI18nNextOptions<K extends string = string> {
   paramKey?: K;
+  pathPrefix?: string;
 }
 
 export interface I18nNextInstance<
@@ -56,6 +61,7 @@ export interface I18nNextInstance<
 > {
   locales: L;
   paramKey: K;
+  pathPrefix: string;
   i18n: ChainBuilder<L, {}>["add"];
   bindLocale: {
     <T extends object>(
@@ -84,6 +90,7 @@ export function createI18nNext<
   options?: CreateI18nNextOptions<K>,
 ): I18nNextInstance<L, K> {
   const paramKey = (options?.paramKey ?? "locale") as K;
+  const pathPrefix = options?.pathPrefix ?? "/";
 
   function LocaleProvider(
     { children, fallbackLocale }: NextLocaleProviderProps<L[number]>,
@@ -93,6 +100,7 @@ export function createI18nNext<
         locales={locales}
         fallbackLocale={fallbackLocale}
         paramKey={paramKey}
+        pathPrefix={pathPrefix}
       >
         {children}
       </ClientLocaleProvider>
@@ -105,6 +113,7 @@ export function createI18nNext<
   return {
     locales,
     paramKey,
+    pathPrefix,
     i18n,
     bindLocale: ((messages: object, localeOrParams: unknown) => {
       if (

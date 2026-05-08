@@ -10,4 +10,5 @@ export type {
   LocalePageParams,
   LocalePageProps,
   NextLocaleProviderProps,
+  SetLocaleOptions,
 } from "./createI18nNext.js";

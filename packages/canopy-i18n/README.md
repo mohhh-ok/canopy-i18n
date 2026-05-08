@@ -474,32 +474,44 @@ export default async function Page({
 
 `bindLocale` accepts either a locale string or the `params` Promise from a page/layout. With the Promise form, it awaits `params` and binds in one step — no need to write the locale union by hand.
 
-### Custom param key
+`setLocale(locale, options?)` accepts an optional second argument to choose between `router.push` (default — adds a history entry) and `router.replace` (no history entry):
 
-The dynamic segment defaults to `[locale]`. If you prefer `[lang]` or any other name, pass `paramKey` to the factory — `generateStaticParams`, `LocalePageProps`, and the `params` reader inside `LocaleProvider` all follow it.
+```tsx
+const { setLocale } = useLocale();
+setLocale('ja');                       // push (default)
+setLocale('ja', { mode: 'replace' });  // replace
+```
+
+### Custom param key and path prefix
+
+The dynamic segment defaults to `[locale]` at the URL root. Two factory options change this:
+
+- **`paramKey`** — segment name (`[locale]`, `[lang]`, ...). Affects `useParams()`, `LocalePageProps`, and `generateStaticParams` shape.
+- **`pathPrefix`** — where the locale segment lives in the URL (`"/"`, `"/app"`, `"/custom"`, ...). Affects `LocaleLink` href computation and `setLocale` navigation.
 
 ```ts
-// app/i18n.ts — segment is [lang]
+// app/(custom-key)/i18n.ts — segment is [lang] under /custom
 export const LOCALES = ['en', 'ja'] as const;
 
 export const {
   bindLocale,
   generateStaticParams,
   LocaleProvider,
+  LocaleLink,
   // ...
-} = createI18nNext(LOCALES, { paramKey: 'lang' });
+} = createI18nNext(LOCALES, { paramKey: 'lang', pathPrefix: '/custom' });
 ```
 
 ```tsx
-// app/[lang]/page.tsx
+// app/(custom-key)/custom/[lang]/page.tsx
 import type { LocalePageProps } from 'canopy-i18n/next';
-import { bindLocale, LOCALES } from '../i18n';
+import { bindLocale, LOCALES } from '../../i18n';
 
 export default async function Page({
   params,
 }: LocalePageProps<typeof LOCALES, 'lang'>) {
   const m = await bindLocale({ appI18n }, params);
-  // ...
+  // LocaleLink will produce /custom/en, /custom/ja
 }
 ```
 

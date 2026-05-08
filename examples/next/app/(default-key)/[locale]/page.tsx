@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { LocalePageProps } from "canopy-i18n/next";
 import { bindLocale, LocaleLink, LOCALES } from "../i18n";
 import { appI18n } from "../messages";
@@ -10,6 +11,9 @@ export default async function Page({
 
   return (
     <main style={{ padding: "2rem", fontFamily: "system-ui" }}>
+      <p>
+        <Link href="/">← Examples</Link>
+      </p>
       <section>
         <h2>Server Section (bindLocale)</h2>
         <h1>{m.appI18n.title()}</h1>

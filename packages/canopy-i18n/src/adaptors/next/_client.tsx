@@ -12,19 +12,31 @@ import {
 } from "react";
 import { bindLocale } from "../../bindLocale.js";
 
+export interface SetLocaleOptions {
+  mode?: "push" | "replace";
+}
+
 export interface LocaleContextValue {
   locale: string;
-  setLocale: (locale: string) => void;
+  setLocale: (locale: string, options?: SetLocaleOptions) => void;
   locales: readonly string[];
+  pathPrefix: string;
 }
 
 const LocaleContext = createContext<LocaleContextValue | undefined>(undefined);
 
-export function swapLocaleInPath(pathname: string, locale: string): string {
+export function swapLocaleInPath(
+  pathname: string,
+  locale: string,
+  pathPrefix = "/",
+): string {
+  const prefixSegments = pathPrefix.split("/").filter(Boolean);
+  const localeIndex = prefixSegments.length + 1;
   const parts = pathname.split("/");
-  if (parts.length >= 2) {
-    parts[1] = locale;
+  while (parts.length <= localeIndex) {
+    parts.push("");
   }
+  parts[localeIndex] = locale;
   return parts.join("/") || "/";
 }
 
@@ -33,11 +45,17 @@ export interface ClientLocaleProviderProps {
   locales: readonly string[];
   fallbackLocale?: string;
   paramKey?: string;
+  pathPrefix?: string;
 }
 
 export function ClientLocaleProvider(
-  { children, locales, fallbackLocale, paramKey = "locale" }:
-    ClientLocaleProviderProps,
+  {
+    children,
+    locales,
+    fallbackLocale,
+    paramKey = "locale",
+    pathPrefix = "/",
+  }: ClientLocaleProviderProps,
 ) {
   const params = useParams<Record<string, string | undefined>>();
   const router = useRouter();
@@ -46,15 +64,20 @@ export function ClientLocaleProvider(
   const locale = params?.[paramKey] ?? fallbackLocale ?? locales[0]!;
 
   const setLocale = useCallback(
-    (next: string) => {
-      router.push(swapLocaleInPath(pathname, next));
+    (next: string, options?: SetLocaleOptions) => {
+      const target = swapLocaleInPath(pathname, next, pathPrefix);
+      if (options?.mode === "replace") {
+        router.replace(target);
+      } else {
+        router.push(target);
+      }
     },
-    [pathname, router],
+    [pathname, router, pathPrefix],
   );
 
   const value = useMemo<LocaleContextValue>(
-    () => ({ locale, setLocale, locales }),
-    [locale, setLocale, locales],
+    () => ({ locale, setLocale, locales, pathPrefix }),
+    [locale, setLocale, locales, pathPrefix],
   );
 
   return (
@@ -86,9 +109,11 @@ export function ClientLocaleLink(
   { locale, href, children, ...rest }: ClientLocaleLinkProps,
 ) {
   const pathname = usePathname();
+  const ctx = useContext(LocaleContext);
+  const pathPrefix = ctx?.pathPrefix ?? "/";
   const target = useMemo(
-    () => href ?? swapLocaleInPath(pathname, locale),
-    [href, pathname, locale],
+    () => href ?? swapLocaleInPath(pathname, locale, pathPrefix),
+    [href, pathname, locale, pathPrefix],
   );
   return (
     <Link href={target} {...rest}>

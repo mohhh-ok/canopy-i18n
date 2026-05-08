@@ -489,12 +489,23 @@ export default async function Page({
 
 `bindLocale` is overloaded: pass a locale string for the sync form, or pass the page's `params` Promise to get an async form that awaits and binds in one step. `LocalePageProps<typeof LOCALES>` types `{ params: Promise<{ locale }> }` from the same `LOCALES` you registered with the factory, so the locale union never has to be hand-written.
 
-To use a different segment name (e.g. `[lang]`), pass `paramKey` to the factory:
+To use a different segment name (e.g. `[lang]`) or move the locale segment under a path prefix (e.g. `/custom/[lang]`), pass `paramKey` and/or `pathPrefix`:
 
 ```ts
-createI18nNext(LOCALES, { paramKey: 'lang' });
+createI18nNext(LOCALES, { paramKey: 'lang', pathPrefix: '/custom' });
 // LocalePageProps<typeof LOCALES, 'lang'> → { params: Promise<{ lang }> }
 // generateStaticParams() → [{ lang: 'en' }, { lang: 'ja' }]
+// LocaleLink href → /custom/<locale>...
+// setLocale → router.push('/custom/<next-locale>...')
+```
+
+`pathPrefix` defaults to `"/"`. Both options are independent and can be combined.
+
+`setLocale` from `useLocale()` accepts an optional `{ mode: 'push' | 'replace' }` second argument (default `'push'`). Use `'replace'` to avoid adding a history entry on locale change:
+
+```tsx
+const { setLocale } = useLocale();
+setLocale('ja', { mode: 'replace' });
 ```
 
 ```tsx
