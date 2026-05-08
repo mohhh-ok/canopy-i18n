@@ -15,12 +15,21 @@
       "types": "./dist/adaptors/react/index.d.ts",
       "import": "./dist/adaptors/react/index.js",
       "default": "./dist/adaptors/react/index.js"
+    },
+    "./next": {
+      "types": "./dist/adaptors/next/index.d.ts",
+      "import": "./dist/adaptors/next/index.js",
+      "default": "./dist/adaptors/next/index.js"
     }
   },
   "peerDependencies": {
+    "next": ">=14",
     "react": ">=18"
   },
   "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    },
     "react": {
       "optional": true
     }
@@ -46,6 +55,7 @@
     "@tsconfig/node20": "^20.1.9",
     "@types/node": "^25.3.0",
     "@types/react": "^19.2.14",
+    "next": "^15.0.0",
     "react": "^19.2.6",
     "release-it": "^19.2.4",
     "typescript": "^5.9.3",

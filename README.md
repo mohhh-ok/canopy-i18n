@@ -426,6 +426,66 @@ const {
 - No built-in persistence. Use uncontrolled mode for in-memory state, or controlled mode to wire `localStorage` / URL / cookies / a router.
 - React is a `peerDependency` (`>=18`). Non-React users can ignore the `/react` subpath entirely.
 
+## Next.js Integration (App Router)
+
+`canopy-i18n/next` is a thin layer on top of `canopy-i18n/react` that integrates with `/[locale]/...` URL routing. It reads the locale from `useParams()` and uses `useRouter().push()` to switch locales.
+
+```tsx
+// app/[locale]/i18n.ts
+import { createI18nNext } from 'canopy-i18n/next';
+
+export const LOCALES = ['en', 'ja'] as const;
+
+export const { i18n, LocaleProvider, LocaleLink, useLocale, useBindLocale } =
+  createI18nNext(LOCALES);
+```
+
+```tsx
+// app/[locale]/layout.tsx
+import { LocaleProvider } from './i18n';
+
+export default function LocaleLayout({ children }: { children: React.ReactNode }) {
+  return <LocaleProvider>{children}</LocaleProvider>;
+}
+```
+
+```tsx
+// app/[locale]/page.tsx
+'use client';
+import { LocaleLink, useBindLocale } from './i18n';
+import { appI18n } from './messages';
+
+export default function Page() {
+  const m = useBindLocale({ appI18n });
+  return (
+    <main>
+      <h1>{m.appI18n.title()}</h1>
+      <LocaleLink locale="ja">日本語</LocaleLink>
+      <LocaleLink locale="en">English</LocaleLink>
+    </main>
+  );
+}
+```
+
+### What you get
+
+```ts
+const {
+  locales,
+  i18n,            // function: i18n(entries) → ChainBuilder bound to LOCALES
+  LocaleProvider,  // reads params.locale, pushes via router on change
+  LocaleLink,      // <LocaleLink locale="ja">: swaps the locale segment in the current path
+  useLocale,
+  useBindLocale,
+} = createI18nNext(['en', 'ja'] as const);
+```
+
+The `LocaleProvider` also accepts a `fallbackLocale` prop for the rare case where `params.locale` is missing (e.g. routes outside the `[locale]` segment).
+
+`swapLocaleInPath(pathname, newLocale)` is exported as a standalone helper if you need it (e.g. building canonical URLs).
+
+Next.js is an optional `peerDependency` (`>=14`). The subpath assumes the App Router (`next/navigation`).
+
 ## Repository
 
 https://github.com/MOhhh-ok/canopy-i18n

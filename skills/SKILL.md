@@ -437,7 +437,56 @@ const {
 
 Notes:
 - React is a `peerDependency` (`>=18`). Non-React users do not need to install React.
-- No persistence (localStorage, cookies, URL) is built in — wire it up yourself if you need it.
+- No persistence (localStorage, cookies, URL) is built in — wire it up yourself, or use the `canopy-i18n/next` subpath for URL-based routing.
+
+---
+
+## Next.js Integration (`canopy-i18n/next`)
+
+A thin wrapper on top of `canopy-i18n/react` that integrates with the App Router's `/[locale]/...` segment. It reads the locale from `useParams()` and pushes via `useRouter()` on locale change.
+
+```tsx
+// app/[locale]/i18n.ts
+import { createI18nNext } from 'canopy-i18n/next';
+
+export const LOCALES = ['en', 'ja'] as const;
+
+export const { i18n, LocaleProvider, LocaleLink, useLocale, useBindLocale } =
+  createI18nNext(LOCALES);
+```
+
+```tsx
+// app/[locale]/layout.tsx
+import { LocaleProvider } from './i18n';
+
+export default function LocaleLayout({ children }: { children: React.ReactNode }) {
+  return <LocaleProvider>{children}</LocaleProvider>;
+}
+```
+
+```tsx
+// app/[locale]/page.tsx
+'use client';
+import { LocaleLink, useBindLocale } from './i18n';
+import { appI18n } from './messages';
+
+export default function Page() {
+  const m = useBindLocale({ appI18n });
+  return (
+    <main>
+      <h1>{m.appI18n.title()}</h1>
+      <LocaleLink locale="ja">日本語</LocaleLink>
+      <LocaleLink locale="en">English</LocaleLink>
+    </main>
+  );
+}
+```
+
+The factory returns the same shape as `createI18nReact` plus `LocaleLink`. Notes:
+- `LocaleProvider` reads `params.locale` and ignores `defaultLocale`. It accepts an optional `fallbackLocale` for routes outside the `[locale]` segment.
+- `LocaleLink` swaps the first path segment to the given locale. Pass an explicit `href` to override.
+- Pages that call `useBindLocale` / `useLocale` need `'use client'` (they're React hooks).
+- Next.js is an optional `peerDependency` (`>=14`). The subpath assumes the App Router (`next/navigation`).
 
 ---
 
@@ -459,6 +508,10 @@ export type { LocalizedMessage } from 'canopy-i18n'; // built message function t
 // React subpath
 export { createI18nReact } from 'canopy-i18n/react';
 export type { LocaleContextValue, LocaleProviderProps } from 'canopy-i18n/react';
+
+// Next.js subpath (App Router)
+export { createI18nNext, swapLocaleInPath } from 'canopy-i18n/next';
+export type { NextLocaleProviderProps, LocaleLinkProps } from 'canopy-i18n/next';
 ```
 
 ### Type Details

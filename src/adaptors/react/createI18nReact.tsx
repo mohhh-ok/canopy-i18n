@@ -1,9 +1,10 @@
 import {
   createContext,
+  type ReactElement,
+  type ReactNode,
   useContext,
   useMemo,
   useState,
-  type ReactNode,
 } from "react";
 import { bindLocale } from "../../bindLocale.js";
 import { ChainBuilder, createI18n } from "../../chainBuilder.js";
@@ -13,10 +14,8 @@ type Equal<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 
 // T 内のすべての ChainBuilder / I18nMessage の Locales が、Provider の Locales と
 // 完全一致することを型で要求するための再帰制約
-type DeepLocaleConstraint<T, Locale extends string> = T extends ChainBuilder<
-  infer LL,
-  any
->
+export type DeepLocaleConstraint<T, Locale extends string> = T extends
+  ChainBuilder<infer LL, any>
   ? Equal<LL[number], Locale> extends true ? T : never
   : T extends I18nMessage<infer LL, any>
     ? Equal<LL[number], Locale> extends true ? T : never
@@ -27,7 +26,7 @@ type DeepLocaleConstraint<T, Locale extends string> = T extends ChainBuilder<
   : T;
 
 // bindLocale の戻り値型をローカルに再現
-type DeepUnwrap<T> = T extends I18nMessage<infer Ls, infer C>
+export type DeepUnwrap<T> = T extends I18nMessage<infer Ls, infer C>
   ? LocalizedMessage<Ls, C>
   : T extends ChainBuilder<infer Ls, infer Messages> ? {
       [K in keyof Messages]: Messages[K] extends I18nMessage<Ls, infer C>
@@ -54,9 +53,19 @@ export type LocaleProviderProps<Locale extends string> =
     }
   );
 
+export interface I18nReactInstance<L extends readonly string[]> {
+  locales: L;
+  i18n: ChainBuilder<L, {}>["add"];
+  LocaleProvider: (props: LocaleProviderProps<L[number]>) => ReactElement;
+  useLocale: () => LocaleContextValue<L[number]>;
+  useBindLocale: <T extends object>(
+    msgsDef: T & DeepLocaleConstraint<T, L[number]>,
+  ) => DeepUnwrap<T>;
+}
+
 export function createI18nReact<const L extends readonly string[]>(
   locales: L,
-) {
+): I18nReactInstance<L> {
   const Context = createContext<LocaleContextValue<L[number]> | undefined>(
     undefined,
   );
@@ -106,5 +115,11 @@ export function createI18nReact<const L extends readonly string[]>(
   const builder: ChainBuilder<L, {}> = createI18n(locales);
   const i18n: typeof builder.add = (entries) => builder.add(entries);
 
-  return { locales, i18n, LocaleProvider, useLocale, useBindLocale };
+  return {
+    locales,
+    i18n,
+    LocaleProvider,
+    useLocale,
+    useBindLocale,
+  } as I18nReactInstance<L>;
 }
