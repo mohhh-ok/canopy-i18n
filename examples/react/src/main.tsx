@@ -5,7 +5,7 @@ import { LocaleProvider } from "./i18n";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <LocaleProvider defaultLocale="en">
+    <LocaleProvider>
       <App />
     </LocaleProvider>
   </StrictMode>,
