@@ -1,12 +1,16 @@
 "use client";
 
-import { LocaleLink, useLocale } from "../i18n";
+import { LocaleLink, useBindLocale, useLocale } from "../i18n";
+import { appI18n } from "../messages";
 
-export function Switcher() {
+export function ClientSection() {
+  const m = useBindLocale({ appI18n });
   const { locale } = useLocale();
 
   return (
-    <>
+    <section>
+      <h2>Client Section (useBindLocale)</h2>
+      <p>{m.appI18n.greeting({ name: "Hanako" })}</p>
       <p>
         Current locale: <strong>{locale}</strong>
       </p>
@@ -14,6 +18,6 @@ export function Switcher() {
         <LocaleLink locale="en">English</LocaleLink>
         <LocaleLink locale="ja">日本語</LocaleLink>
       </nav>
-    </>
+    </section>
   );
 }
