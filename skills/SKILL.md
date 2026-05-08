@@ -308,128 +308,124 @@ console.log(localized.content.sidebar.widget()); // "Widget"
 
 ## React Integration
 
-### Locale Context
+`canopy-i18n/react` exposes a single factory, `createI18nReact(LOCALES)`, that returns a Provider, hooks, and a `defineMessage` already bound to your locales. There is no separate `LocaleContext` to write yourself.
+
+### Setup
 
 ```tsx
-// LocaleContext.tsx
-import { bindLocale } from 'canopy-i18n';
-import { createContext, useContext, useState } from 'react';
+// i18n.ts — define LOCALES once and derive the React API from it
+import { createI18nReact } from 'canopy-i18n/react';
 
-type Locale = 'en' | 'ja';
+export const LOCALES = ['en', 'ja'] as const;
+export type Locale = (typeof LOCALES)[number];
 
-type ContextType = {
-  locale: Locale;
-  setLocale: (locale: Locale) => void;
-};
+export const { i18n, LocaleProvider, useLocale, useBindLocale } =
+  createI18nReact(LOCALES);
 
-const LocaleContext = createContext<ContextType | undefined>(undefined);
+// `i18n(...)` is a shorthand for `ChainBuilder.add(...)` pre-bound to LOCALES.
+// Each call returns a new ChainBuilder — keep chaining `.add(...)` to extend it.
+export const appI18n = i18n({
+  title: { en: 'My App', ja: 'マイアプリ' },
+  description: { en: 'Welcome!', ja: 'ようこそ！' },
+  greeting: (ctx: { name: string }) => ({
+    en: `Hello, ${ctx.name}!`,
+    ja: `こんにちは、${ctx.name}さん！`,
+  }),
+});
+```
 
-export function LocaleProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocale] = useState<Locale>('en');
+### Provider
+
+`defaultLocale` is required and must be one of `LOCALES`. Locale state is in-memory only — there is no built-in persistence.
+
+```tsx
+// main.tsx
+import { LocaleProvider } from './i18n';
+
+<LocaleProvider defaultLocale="en">
+  <App />
+</LocaleProvider>
+```
+
+### Components
+
+```tsx
+// App.tsx
+import { appI18n, useBindLocale } from './i18n';
+
+export default function App() {
+  const m = useBindLocale({ appI18n });
   return (
-    <LocaleContext.Provider value={{ locale, setLocale }}>
-      {children}
-    </LocaleContext.Provider>
+    <div>
+      <h1>{m.appI18n.title()}</h1>
+      <p>{m.appI18n.description()}</p>
+      <p>{m.appI18n.greeting({ name: 'Taro' })}</p>
+    </div>
   );
-}
-
-export function useLocale() {
-  const ctx = useContext(LocaleContext);
-  if (!ctx) throw new Error('useLocale must be used within a LocaleProvider');
-  return ctx;
-}
-
-// Reactively applies bindLocale based on current locale
-export function useBindLocale<T extends object>(msgsDef: T) {
-  const { locale } = useLocale();
-  return bindLocale(msgsDef, locale);
 }
 ```
 
-### Usage in Components
+`useBindLocale` accepts any object/array containing `ChainBuilder` instances and is memoized per `(msgsDef, locale)`. The `Locale` of every nested `ChainBuilder` must match the Provider's `LOCALES`; mismatches are caught at compile time.
+
+### Language Switcher
 
 ```tsx
-// i18n.ts — export ChainBuilders (not yet built)
-import { createI18n } from 'canopy-i18n';
+// LanguageSwitcher.tsx
+import { useLocale } from './i18n';
+import { LOCALES } from './i18n';
 
-const LOCALES = ['en', 'ja'] as const;
-export const defineMessage = () => createI18n(LOCALES);
-
-export const appI18n = defineMessage()
-  .add({
-    title: { en: 'My App', ja: 'マイアプリ' },
-    description: { en: 'Welcome!', ja: 'ようこそ！' },
-    greeting: (ctx: { name: string }) => ({
-      en: `Hello, ${ctx.name}!`,
-      ja: `こんにちは、${ctx.name}さん！`,
-    }),
-  });
-
-// App.tsx — apply locale with useBindLocale
-import { useBindLocale } from './LocaleContext';
-import { appI18n } from './i18n';
-
-export default function App() {
-  const m = useBindLocale(appI18n);
-
+export function LanguageSwitcher() {
+  const { locale, setLocale } = useLocale();
   return (
-    <div>
-      <h1>{m.title()}</h1>
-      <p>{m.description()}</p>
-      <p>{m.greeting({ name: 'Taro' })}</p>
-    </div>
+    <select value={locale} onChange={(e) => setLocale(e.target.value as typeof LOCALES[number])}>
+      {LOCALES.map((l) => <option key={l} value={l}>{l}</option>)}
+    </select>
   );
 }
 ```
 
 ### Component-Local i18n (Colocation)
 
-```tsx
-// ProfileCard.tsx — define and use i18n in the same file
-import { createI18n } from 'canopy-i18n';
-import type { JSX } from 'react';
-import { useBindLocale } from './LocaleContext';
+You can also define a `ChainBuilder` next to the component that uses it. Use the same `i18n` exported from `i18n.ts` so the locales stay aligned with the Provider.
 
-const profileI18n = createI18n(['en', 'ja'] as const)
-  .add({
-    title: { en: 'User Profile', ja: 'ユーザープロフィール' },
-    editButton: { en: 'Edit Profile', ja: 'プロフィール編集' },
-    greeting: (ctx: { name: string }) => ({
-      en: `Welcome, ${ctx.name}!`,
-      ja: `ようこそ、${ctx.name}さん！`,
-    }),
-  });
+```tsx
+// ProfileCard.tsx
+import { i18n, useBindLocale } from './i18n';
+
+const profileI18n = i18n({
+  title: { en: 'User Profile', ja: 'ユーザープロフィール' },
+  greeting: (ctx: { name: string }) => ({
+    en: `Welcome, ${ctx.name}!`,
+    ja: `ようこそ、${ctx.name}さん！`,
+  }),
+});
 
 export function ProfileCard({ name }: { name: string }) {
-  const m = useBindLocale(profileI18n);
-
+  const m = useBindLocale({ profileI18n });
   return (
     <div>
-      <h2>{m.title()}</h2>
-      <p>{m.greeting({ name })}</p>
-      <button>{m.editButton()}</button>
+      <h2>{m.profileI18n.title()}</h2>
+      <p>{m.profileI18n.greeting({ name })}</p>
     </div>
   );
 }
 ```
 
-### Language Switcher Component
+### Factory Return Value
 
-```tsx
-// LanguageSwitcher.tsx
-import { useLocale } from './LocaleContext';
-
-export function LanguageSwitcher() {
-  const { locale, setLocale } = useLocale();
-
-  return (
-    <div>
-      <button onClick={() => setLocale('en')} disabled={locale === 'en'}>EN</button>
-      <button onClick={() => setLocale('ja')} disabled={locale === 'ja'}>JA</button>
-    </div>
-  );
-}
+```ts
+const {
+  locales,         // the LOCALES tuple
+  i18n,            // function: i18n(entries) → ChainBuilder bound to LOCALES
+  LocaleProvider,  // requires defaultLocale: Locale
+  useLocale,       // () => { locale, setLocale }
+  useBindLocale,   // memoized bindLocale, locale type-checked
+} = createI18nReact(['en', 'ja'] as const);
 ```
+
+Notes:
+- React is a `peerDependency` (`>=18`). Non-React users do not need to install React.
+- No persistence (localStorage, cookies, URL) is built in — wire it up yourself if you need it.
 
 ---
 
@@ -447,6 +443,10 @@ export { isChainBuilder } from 'canopy-i18n';  // type guard
 // Types
 export type { Template } from 'canopy-i18n';         // R | ((ctx: C) => R)
 export type { LocalizedMessage } from 'canopy-i18n'; // built message function type
+
+// React subpath
+export { createI18nReact } from 'canopy-i18n/react';
+export type { LocaleContextValue, LocaleProviderProps } from 'canopy-i18n/react';
 ```
 
 ### Type Details

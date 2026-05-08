@@ -345,6 +345,76 @@ console.log(localized.content.sidebar.widget()); // "Widget"
 ```
 
 
+## React Integration
+
+`canopy-i18n/react` provides a tiny factory that returns a Provider, hooks, and a pre-bound `defineMessage` — all sharing the same `Locale` type.
+
+```tsx
+// i18n.ts
+import { createI18nReact } from 'canopy-i18n/react';
+
+export const LOCALES = ['en', 'ja'] as const;
+
+export const { i18n, LocaleProvider, useLocale, useBindLocale } =
+  createI18nReact(LOCALES);
+
+export const appI18n = i18n({
+  title: { en: 'My App', ja: 'マイアプリ' },
+  greeting: (ctx: { name: string }) => ({
+    en: `Hello, ${ctx.name}!`,
+    ja: `こんにちは、${ctx.name}さん！`,
+  }),
+});
+```
+
+```tsx
+// main.tsx
+import { LocaleProvider } from './i18n';
+
+<LocaleProvider defaultLocale="en">
+  <App />
+</LocaleProvider>
+```
+
+```tsx
+// App.tsx
+import { appI18n, useBindLocale, useLocale } from './i18n';
+
+function App() {
+  const m = useBindLocale({ appI18n });
+  const { locale, setLocale } = useLocale();
+
+  return (
+    <div>
+      <h1>{m.appI18n.title()}</h1>
+      <p>{m.appI18n.greeting({ name: 'Taro' })}</p>
+      <button onClick={() => setLocale(locale === 'en' ? 'ja' : 'en')}>
+        {locale}
+      </button>
+    </div>
+  );
+}
+```
+
+### Factory return value
+
+```ts
+const {
+  locales,         // the LOCALES tuple you passed in
+  i18n,            // function: i18n(entries) → ChainBuilder bound to LOCALES
+  LocaleProvider,  // <LocaleProvider defaultLocale="en">
+  useLocale,       // () => { locale, setLocale }
+  useBindLocale,   // memoized bindLocale, locale type-checked
+} = createI18nReact(['en', 'ja'] as const);
+```
+
+`i18n` is a shorthand for `ChainBuilder.add` bound to a base builder. Each `i18n({...})` call returns an independent `ChainBuilder`, so you can keep chaining `.add({...}).add({...})` for additional entries.
+
+- `useBindLocale(msgsDef)` is memoized per `(msgsDef, locale)` pair.
+- The `Locale` type is derived from the `LOCALES` tuple. Passing a `ChainBuilder` whose locales differ from the Provider's locales is rejected at compile time.
+- No persistence: locale lives in React state only. Wire `localStorage` / URL / cookies yourself if you need it.
+- React is a `peerDependency` (`>=18`). Non-React users can ignore the `/react` subpath entirely.
+
 ## Repository
 
 https://github.com/MOhhh-ok/canopy-i18n

@@ -1,9 +1,7 @@
-import { defineMessage } from "./i18n";
-import { useBindLocale } from "./LocaleContext";
+import { i18n, useBindLocale } from "./i18n";
 
 // i18nデータの定義
-const profileI18n = defineMessage()
-  .add({
+const profileI18n = i18n({
     title: {
       en: "User Profile",
       ja: "ユーザープロフィール",

@@ -1,11 +1,10 @@
-import { msgsDef } from "./i18n";
+import { commonMsgs, useBindLocale } from "./i18n";
 import { LanguageSwitcher } from "./LanguageSwitcher";
-import { useBindLocale } from "./LocaleContext";
 import { ProfileCard } from "./ProfileCard";
 import type { User } from "./types";
 
 export default function App() {
-  const m = useBindLocale(msgsDef);
+  const m = useBindLocale(commonMsgs);
 
   // 動的メッセージのサンプルデータ
   const user: User = {
@@ -25,7 +24,7 @@ export default function App() {
     >
       <header style={{ marginBottom: "30px", textAlign: "center" }}>
         <h1 style={{ margin: "0 0 20px 0", fontSize: "2em" }}>
-          {m.baseI18n.title()}
+          {m.base.title()}
         </h1>
         <LanguageSwitcher />
       </header>
@@ -38,10 +37,10 @@ export default function App() {
         }}
       >
         <p style={{ margin: "0 0 15px 0", fontSize: "1.1em" }}>
-          {m.baseI18n.welcome()}
+          {m.base.welcome()}
         </p>
         <p style={{ margin: "0", color: "#666" }}>
-          {m.baseI18n.description()}
+          {m.base.description()}
         </p>
       </main>
 
@@ -68,10 +67,10 @@ export default function App() {
           Dynamic Messages (addTemplate)
         </h2>
         <p style={{ marginBottom: "10px", fontSize: "1.1em" }}>
-          {m.dynamicMessages.greeting(user)}
+          {m.dynamic.greeting(user)}
         </p>
         <p style={{ margin: "0", color: "#555" }}>
-          {m.dynamicMessages.itemCount(user)}
+          {m.dynamic.itemCount(user)}
         </p>
       </section>
 
@@ -97,7 +96,7 @@ export default function App() {
           fontSize: "0.9em",
         }}
       >
-        {m.baseI18n.footer()}
+        {m.base.footer()}
       </footer>
     </div>
   );

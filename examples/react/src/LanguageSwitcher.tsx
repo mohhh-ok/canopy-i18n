@@ -1,4 +1,4 @@
-import { useLocale } from "./LocaleContext";
+import { useLocale } from "./i18n";
 import { type Locale, LOCALES } from "./types";
 
 export function LanguageSwitcher() {
