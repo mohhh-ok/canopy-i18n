@@ -7,6 +7,9 @@ A tiny, type-safe i18n library for building localized messages with builder patt
 - **Type-safe**: Compile-time safety for locale keys with full TypeScript IntelliSense support.
 - **Flexible templating**: Plain functions support any JavaScript logic, template literals, or formatting library.
 - **Zero dependencies**: Lightweight with native TypeScript syntax, no custom {{placeholder}} format.
+- **React-ready**: Provider, hooks, and built-in source wrappers for URL hash / search param / pathname / localStorage / Cookie. See [React Integration](#react-integration).
+
+> **Using React?** Jump straight to [React Integration](#react-integration) — the Provider, hooks, and ready-made source wrappers cover most app setups out of the box.
 ## Why Canopy i18n?
 
 Traditional i18n libraries require separate JSON files and string-based key lookups:
@@ -109,6 +112,119 @@ console.log(jaMessages.title());                        // "タイトルテス�
 console.log(jaMessages.greeting());                     // "こんにちは"
 console.log(jaMessages.welcome({ name: 'Tanaka', age: 20 })); // "こんにちは、Tanakaさん。あなたは20歳です。"
 ```
+
+## React Integration
+
+`canopy-i18n/react` provides a tiny factory that returns a Provider, hooks, and a pre-bound `i18n` shorthand — all sharing the same `Locale` type.
+
+```tsx
+// i18n.ts
+import { createI18nReact } from 'canopy-i18n/react';
+
+export const LOCALES = ['en', 'ja'] as const;
+
+export const { i18n, LocaleProvider, useLocale, useBindLocale } =
+  createI18nReact(LOCALES);
+
+export const appI18n = i18n({
+  title: { en: 'My App', ja: 'マイアプリ' },
+  greeting: (ctx: { name: string }) => ({
+    en: `Hello, ${ctx.name}!`,
+    ja: `こんにちは、${ctx.name}さん！`,
+  }),
+});
+```
+
+```tsx
+// main.tsx
+import { LocaleProvider } from './i18n';
+
+<LocaleProvider defaultLocale="en">
+  <App />
+</LocaleProvider>
+```
+
+`LocaleProvider` also supports a controlled mode for integrating with URL routing, cookies, or external state:
+
+```tsx
+// Controlled mode: locale is owned by the parent
+<LocaleProvider locale={currentLocale} onLocaleChange={setCurrentLocale}>
+  <App />
+</LocaleProvider>
+```
+
+In controlled mode, `setLocale` from `useLocale()` calls your `onLocaleChange` handler instead of mutating internal state.
+
+`createI18nReact` also accepts a factory-level `useLocaleSource` for source-driven locale (e.g. external store, URL hook, cookie). When set, the Provider reads the locale from this hook and `setLocale` calls `onLocaleChange` instead of mutating internal state:
+
+```tsx
+export const { LocaleProvider, useLocale } = createI18nReact(LOCALES, {
+  useLocaleSource: () => useMyStore((s) => s.locale),
+  onLocaleChange: (l) => useMyStore.getState().setLocale(l),
+});
+
+<LocaleProvider>
+  <App />
+</LocaleProvider>
+```
+
+### Built-in source wrappers
+
+For common sources, `canopy-i18n/react` ships ready-made factories. Each returns the same shape as `createI18nReact` and operates in source-driven mode:
+
+```tsx
+import {
+  createHashI18nReact,     // URL hash (#ja)
+  createSearchI18nReact,   // URL search param (?lang=ja, configurable via { param })
+  createPathnameI18nReact, // URL pathname prefix (/ja/..., configurable via { basePath })
+  createStorageI18nReact,  // localStorage (configurable via { key })
+  createCookieI18nReact,   // Cookie (configurable via { key, maxAge, path, sameSite })
+} from 'canopy-i18n/react';
+
+export const { LocaleProvider, useLocale, useBindLocale } =
+  createHashI18nReact(LOCALES);
+
+// Render <LocaleProvider> with no props.
+```
+
+```tsx
+// App.tsx
+import { appI18n, useBindLocale, useLocale } from './i18n';
+
+function App() {
+  const m = useBindLocale({ appI18n });
+  const { locale, setLocale } = useLocale();
+
+  return (
+    <div>
+      <h1>{m.appI18n.title()}</h1>
+      <p>{m.appI18n.greeting({ name: 'Taro' })}</p>
+      <button onClick={() => setLocale(locale === 'en' ? 'ja' : 'en')}>
+        {locale}
+      </button>
+    </div>
+  );
+}
+```
+
+### Factory return value
+
+```ts
+const {
+  locales,         // the LOCALES tuple you passed in
+  i18n,            // function: i18n(entries) → ChainBuilder bound to LOCALES
+  LocaleProvider,  // uncontrolled or controlled (see above)
+  useLocale,       // () => { locale, setLocale }
+  useBindLocale,   // memoized bindLocale, locale type-checked
+} = createI18nReact(['en', 'ja'] as const);
+```
+
+`i18n` is a shorthand for `ChainBuilder.add` bound to a base builder. Each `i18n({...})` call returns an independent `ChainBuilder`, so you can keep chaining `.add({...}).add({...})` for additional entries.
+
+- `useBindLocale(msgsDef)` is memoized per `(msgsDef, locale)` pair.
+- The `Locale` type is derived from the `LOCALES` tuple. Passing a `ChainBuilder` whose locales differ from the Provider's locales is rejected at compile time.
+- `createI18nReact` itself has no built-in persistence. Use a built-in wrapper (`createHash/Search/Pathname/Storage/CookieI18nReact`) for common sources, or pass your own `useLocaleSource` / `onLocaleChange` for anything else.
+- React is a `peerDependency` (`>=18`). Non-React users can ignore the `/react` subpath entirely.
 
 ## API
 
@@ -343,118 +459,6 @@ console.log(localized.header.title());           // "Header"
 console.log(localized.content.main.body());      // "Body"
 console.log(localized.content.sidebar.widget()); // "Widget"
 ```
-
-
-## React Integration
-
-`canopy-i18n/react` provides a tiny factory that returns a Provider, hooks, and a pre-bound `defineMessage` — all sharing the same `Locale` type.
-
-```tsx
-// i18n.ts
-import { createI18nReact } from 'canopy-i18n/react';
-
-export const LOCALES = ['en', 'ja'] as const;
-
-export const { i18n, LocaleProvider, useLocale, useBindLocale } =
-  createI18nReact(LOCALES);
-
-export const appI18n = i18n({
-  title: { en: 'My App', ja: 'マイアプリ' },
-  greeting: (ctx: { name: string }) => ({
-    en: `Hello, ${ctx.name}!`,
-    ja: `こんにちは、${ctx.name}さん！`,
-  }),
-});
-```
-
-```tsx
-// main.tsx
-import { LocaleProvider } from './i18n';
-
-<LocaleProvider defaultLocale="en">
-  <App />
-</LocaleProvider>
-```
-
-`LocaleProvider` also supports a controlled mode for integrating with URL routing, cookies, or external state:
-
-```tsx
-// Controlled mode: locale is owned by the parent
-<LocaleProvider locale={currentLocale} onLocaleChange={setCurrentLocale}>
-  <App />
-</LocaleProvider>
-```
-
-In controlled mode, `setLocale` from `useLocale()` calls your `onLocaleChange` handler instead of mutating internal state.
-
-`createI18nReact` also accepts a factory-level `useLocaleSource` for source-driven locale (e.g. external store, URL hook, cookie). When set, the Provider reads the locale from this hook and `setLocale` calls `onLocaleChange` instead of mutating internal state:
-
-```tsx
-export const { LocaleProvider, useLocale } = createI18nReact(LOCALES, {
-  useLocaleSource: () => useMyStore((s) => s.locale),
-  onLocaleChange: (l) => useMyStore.getState().setLocale(l),
-});
-
-<LocaleProvider>
-  <App />
-</LocaleProvider>
-```
-
-For common sources, `canopy-i18n/react` ships ready-made factories. Each returns the same shape as `createI18nReact` and operates in source-driven mode:
-
-```tsx
-import {
-  createHashI18nReact,     // URL hash (#ja)
-  createSearchI18nReact,   // URL search param (?lang=ja, configurable via { param })
-  createPathnameI18nReact, // URL pathname prefix (/ja/..., configurable via { basePath })
-  createStorageI18nReact,  // localStorage (configurable via { key })
-  createCookieI18nReact,   // Cookie (configurable via { key, maxAge, path, sameSite })
-} from 'canopy-i18n/react';
-
-export const { LocaleProvider, useLocale, useBindLocale } =
-  createHashI18nReact(LOCALES);
-
-// Render <LocaleProvider> with no props.
-```
-
-```tsx
-// App.tsx
-import { appI18n, useBindLocale, useLocale } from './i18n';
-
-function App() {
-  const m = useBindLocale({ appI18n });
-  const { locale, setLocale } = useLocale();
-
-  return (
-    <div>
-      <h1>{m.appI18n.title()}</h1>
-      <p>{m.appI18n.greeting({ name: 'Taro' })}</p>
-      <button onClick={() => setLocale(locale === 'en' ? 'ja' : 'en')}>
-        {locale}
-      </button>
-    </div>
-  );
-}
-```
-
-### Factory return value
-
-```ts
-const {
-  locales,         // the LOCALES tuple you passed in
-  i18n,            // function: i18n(entries) → ChainBuilder bound to LOCALES
-  LocaleProvider,  // uncontrolled or controlled (see above)
-  useLocale,       // () => { locale, setLocale }
-  useBindLocale,   // memoized bindLocale, locale type-checked
-} = createI18nReact(['en', 'ja'] as const);
-```
-
-`i18n` is a shorthand for `ChainBuilder.add` bound to a base builder. Each `i18n({...})` call returns an independent `ChainBuilder`, so you can keep chaining `.add({...}).add({...})` for additional entries.
-
-- `useBindLocale(msgsDef)` is memoized per `(msgsDef, locale)` pair.
-- The `Locale` type is derived from the `LOCALES` tuple. Passing a `ChainBuilder` whose locales differ from the Provider's locales is rejected at compile time.
-- `createI18nReact` itself has no built-in persistence. Use a built-in wrapper (`createHash/Search/Pathname/Storage/CookieI18nReact`) for common sources, or pass your own `useLocaleSource` / `onLocaleChange` for anything else.
-- React is a `peerDependency` (`>=18`). Non-React users can ignore the `/react` subpath entirely.
 
 ## Repository
 
