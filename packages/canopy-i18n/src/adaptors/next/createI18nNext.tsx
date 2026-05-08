@@ -1,18 +1,24 @@
-"use client";
-
-import Link from "next/link";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import type { ComponentProps, ReactElement, ReactNode } from "react";
+import type Link from "next/link";
+import { bindLocale as plainBindLocale } from "../../bindLocale.js";
+import { type ChainBuilder, createI18n } from "../../chainBuilder.js";
+import type {
+  DeepLocaleConstraint,
+  DeepUnwrap,
+} from "../react/createI18nReact.js";
 import {
-  type ComponentProps,
-  type ReactNode,
-  useCallback,
-  useMemo,
-} from "react";
-import { createI18nReact } from "../react/createI18nReact.js";
+  ClientLocaleLink,
+  ClientLocaleProvider,
+  swapLocaleInPath,
+  useBindLocaleClient,
+  useLocaleClient,
+} from "./_client.js";
 
-export interface NextLocaleProviderProps {
+export { swapLocaleInPath };
+
+export interface NextLocaleProviderProps<Locale extends string> {
   children: ReactNode;
-  fallbackLocale?: string;
+  fallbackLocale?: Locale;
 }
 
 export interface LocaleLinkProps<Locale extends string>
@@ -22,68 +28,55 @@ export interface LocaleLinkProps<Locale extends string>
   children?: ReactNode;
 }
 
-// /ja/foo/bar → /en/foo/bar  (1 段目セグメントを置換)
-export function swapLocaleInPath(pathname: string, locale: string): string {
-  const parts = pathname.split("/");
-  if (parts.length >= 2) {
-    parts[1] = locale;
-  }
-  return parts.join("/") || "/";
+export interface LocaleContextValue<Locale extends string> {
+  locale: Locale;
+  setLocale: (locale: Locale) => void;
+  locales: readonly Locale[];
 }
 
-export function createI18nNext<const L extends readonly string[]>(locales: L) {
-  const {
-    i18n,
-    useLocale,
-    useBindLocale,
-    LocaleProvider: BaseLocaleProvider,
-  } = createI18nReact(locales);
+export interface I18nNextInstance<L extends readonly string[]> {
+  locales: L;
+  i18n: ChainBuilder<L, {}>["add"];
+  bindLocale: <T extends object>(
+    messages: T & DeepLocaleConstraint<T, L[number]>,
+    locale: L[number],
+  ) => DeepUnwrap<T>;
+  generateStaticParams: () => Array<{ locale: L[number] }>;
+  LocaleProvider: (props: NextLocaleProviderProps<L[number]>) => ReactElement;
+  LocaleLink: (props: LocaleLinkProps<L[number]>) => ReactElement;
+  useLocale: () => LocaleContextValue<L[number]>;
+  useBindLocale: <T extends object>(
+    messages: T & DeepLocaleConstraint<T, L[number]>,
+  ) => DeepUnwrap<T>;
+}
 
-  function NextLocaleProvider(
-    { children, fallbackLocale }: NextLocaleProviderProps,
+export function createI18nNext<const L extends readonly string[]>(
+  locales: L,
+): I18nNextInstance<L> {
+  function LocaleProvider(
+    { children, fallbackLocale }: NextLocaleProviderProps<L[number]>,
   ) {
-    const params = useParams<{ locale?: string }>();
-    const router = useRouter();
-    const pathname = usePathname();
-
-    const locale = (params?.locale ?? fallbackLocale ?? locales[0]) as
-      L[number];
-
-    const onLocaleChange = useCallback(
-      (next: L[number]) => {
-        router.push(swapLocaleInPath(pathname, next));
-      },
-      [pathname, router],
-    );
-
     return (
-      <BaseLocaleProvider locale={locale} onLocaleChange={onLocaleChange}>
+      <ClientLocaleProvider locales={locales} fallbackLocale={fallbackLocale}>
         {children}
-      </BaseLocaleProvider>
+      </ClientLocaleProvider>
     );
   }
 
-  function LocaleLink(
-    { locale, href, children, ...rest }: LocaleLinkProps<L[number]>,
-  ) {
-    const pathname = usePathname();
-    const target = useMemo(
-      () => href ?? swapLocaleInPath(pathname, locale),
-      [href, pathname, locale],
-    );
-    return (
-      <Link href={target} {...rest}>
-        {children}
-      </Link>
-    );
-  }
+  const builder: ChainBuilder<L, {}> = createI18n(locales);
+  const i18n: typeof builder.add = (entries) => builder.add(entries);
 
   return {
     locales,
     i18n,
-    useLocale,
-    useBindLocale,
-    LocaleProvider: NextLocaleProvider,
-    LocaleLink,
+    bindLocale: ((messages, locale) =>
+      plainBindLocale(messages, locale)) as I18nNextInstance<L>["bindLocale"],
+    generateStaticParams: () =>
+      locales.map((locale) => ({ locale: locale as L[number] })),
+    LocaleProvider,
+    LocaleLink: ClientLocaleLink as unknown as I18nNextInstance<L>["LocaleLink"],
+    useLocale: useLocaleClient as unknown as I18nNextInstance<L>["useLocale"],
+    useBindLocale:
+      useBindLocaleClient as unknown as I18nNextInstance<L>["useBindLocale"],
   };
 }

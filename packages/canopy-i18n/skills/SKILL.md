@@ -443,21 +443,30 @@ Notes:
 
 ## Next.js Integration (`canopy-i18n/next`)
 
-A thin wrapper on top of `canopy-i18n/react` that integrates with the App Router's `/[locale]/...` segment. It reads the locale from `useParams()` and pushes via `useRouter()` on locale change.
+Integrates with the App Router's `/[locale]/...` segment. The factory module is **server / client safe** — `app/i18n.ts` does NOT need `"use client"`. The same module can be imported from Server Components and Client Components.
 
 ```tsx
-// app/[locale]/i18n.ts
+// app/i18n.ts  ← no "use client" directive
 import { createI18nNext } from 'canopy-i18n/next';
 
 export const LOCALES = ['en', 'ja'] as const;
 
-export const { i18n, LocaleProvider, LocaleLink, useLocale, useBindLocale } =
-  createI18nNext(LOCALES);
+export const {
+  i18n,
+  bindLocale,            // (messages, locale) => bound — usable on the server
+  generateStaticParams,  // () => [{ locale: 'en' }, { locale: 'ja' }]
+  LocaleProvider,
+  LocaleLink,
+  useLocale,
+  useBindLocale,
+} = createI18nNext(LOCALES);
 ```
 
 ```tsx
-// app/[locale]/layout.tsx
-import { LocaleProvider } from './i18n';
+// app/[locale]/layout.tsx — Server Component
+import { generateStaticParams, LocaleProvider } from '../i18n';
+
+export { generateStaticParams };
 
 export default function LocaleLayout({ children }: { children: React.ReactNode }) {
   return <LocaleProvider>{children}</LocaleProvider>;
@@ -465,27 +474,46 @@ export default function LocaleLayout({ children }: { children: React.ReactNode }
 ```
 
 ```tsx
-// app/[locale]/page.tsx
-'use client';
-import { LocaleLink, useBindLocale } from './i18n';
-import { appI18n } from './messages';
+// app/[locale]/page.tsx — Server Component (no "use client")
+import { bindLocale } from '../i18n';
+import { appI18n } from '../messages';
 
-export default function Page() {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ locale: 'en' | 'ja' }>;
+}) {
+  const { locale } = await params;
+  const m = bindLocale({ appI18n }, locale);
+  return <h1>{m.appI18n.title()}</h1>;
+}
+```
+
+```tsx
+// Client Component
+'use client';
+import { LocaleLink, useBindLocale } from '../i18n';
+import { appI18n } from '../messages';
+
+export function Switcher() {
   const m = useBindLocale({ appI18n });
   return (
-    <main>
-      <h1>{m.appI18n.title()}</h1>
+    <>
+      <p>{m.appI18n.title()}</p>
       <LocaleLink locale="ja">日本語</LocaleLink>
       <LocaleLink locale="en">English</LocaleLink>
-    </main>
+    </>
   );
 }
 ```
 
-The factory returns the same shape as `createI18nReact` plus `LocaleLink`. Notes:
-- `LocaleProvider` reads `params.locale` and ignores `defaultLocale`. It accepts an optional `fallbackLocale` for routes outside the `[locale]` segment.
-- `LocaleLink` swaps the first path segment to the given locale. Pass an explicit `href` to override.
-- Pages that call `useBindLocale` / `useLocale` need `'use client'` (they're React hooks).
+Notes:
+- `LocaleProvider` reads `params.locale` from the route, and pushes via `useRouter()` on change. Accepts a `fallbackLocale` prop for routes outside the `[locale]` segment.
+- `LocaleLink` swaps the first path segment. Pass an explicit `href` to override.
+- `bindLocale` / `i18n` / `generateStaticParams` are pure functions, callable from both server and client.
+- `useLocale` / `useBindLocale` are React hooks — only valid inside `"use client"` components.
+- `LocaleLink` and `LocaleProvider` render client components internally; calling them from a Server Component creates the standard server-wraps-client boundary.
+- Internally, `canopy-i18n/next` ships two modules: `_client.tsx` (`"use client"`, hook code) and `createI18nNext.tsx` (no directive, factory + server helpers). Re-exports preserve the boundary.
 - Next.js is an optional `peerDependency` (`>=14`). The subpath assumes the App Router (`next/navigation`).
 
 ---
