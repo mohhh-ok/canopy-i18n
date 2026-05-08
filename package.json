@@ -12,6 +12,8 @@
     "test:e2e": "bun run --filter @repo/react test:e2e",
     "test": "bun run build && bun run test:unit && bun run test:e2e",
     "type-check": "bun run --filter '*' type-check",
-    "release": "bun run test && bun run --filter canopy-i18n release"
+    "release:patch": "bun run test && bun run --filter canopy-i18n release:patch",
+    "release:minor": "bun run test && bun run --filter canopy-i18n release:minor",
+    "release:major": "bun run test && bun run --filter canopy-i18n release:major"
   }
 }

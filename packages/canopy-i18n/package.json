@@ -49,13 +49,10 @@
     "type-check": "tsc -p . --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "release": "GITHUB_TOKEN=\"$(gh auth token)\" npx release-it"
-  },
-  "release-it": {
-    "github": {
-      "release": true,
-      "autoGenerate": true
-    }
+    "release:patch": "npm version patch && bun run _publish",
+    "release:minor": "npm version minor && bun run _publish",
+    "release:major": "npm version major && bun run _publish",
+    "_publish": "npm publish && git push --follow-tags && gh release create \"$(node -p \"require('./package.json').version\")\" --generate-notes"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.9",
@@ -63,7 +60,6 @@
     "@types/react": "^19.2.14",
     "next": "16",
     "react": "^19.2.6",
-    "release-it": "^19.2.4",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   },
