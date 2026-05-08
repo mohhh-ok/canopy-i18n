@@ -1,4 +1,4 @@
-import { createI18nNext } from "canopy-i18n/next";
+import { createI18nNext } from "canopy-i18n/unstable_next";
 
 export const LOCALES = ["en", "ja"] as const;
 export type Locale = (typeof LOCALES)[number];

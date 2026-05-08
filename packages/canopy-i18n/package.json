@@ -16,7 +16,7 @@
       "import": "./dist/adaptors/react/index.js",
       "default": "./dist/adaptors/react/index.js"
     },
-    "./next": {
+    "./unstable_next": {
       "types": "./dist/adaptors/next/index.d.ts",
       "import": "./dist/adaptors/next/index.js",
       "default": "./dist/adaptors/next/index.js"

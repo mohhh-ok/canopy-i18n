@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { LocalePageProps } from "canopy-i18n/next";
+import type { LocalePageProps } from "canopy-i18n/unstable_next";
 import { bindLocale, LocaleLink, LOCALES } from "../../i18n";
 import { appI18n } from "../../messages";
 import { ClientSection } from "./ClientSection";
