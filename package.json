@@ -8,7 +8,10 @@
   ],
   "scripts": {
     "build": "bun run --filter canopy-i18n build",
-    "test": "bun run --filter canopy-i18n test",
-    "type-check": "bun run --filter '*' type-check"
+    "test:unit": "bun run --filter canopy-i18n test",
+    "test:e2e": "bun run --filter @repo/react test:e2e",
+    "test": "bun run test:unit && bun run test:e2e",
+    "type-check": "bun run --filter '*' type-check",
+    "release": "bun run test && bun run --filter canopy-i18n release"
   }
 }
