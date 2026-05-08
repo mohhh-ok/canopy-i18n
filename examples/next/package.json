@@ -1,5 +1,5 @@
 {
-  "name": "next-example",
+  "name": "@repo/next",
   "private": true,
   "version": "0.0.0",
   "scripts": {
@@ -9,15 +9,15 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "canopy-i18n": "../../",
-    "next": "^15.0.0",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "canopy-i18n": "workspace:*",
+    "next": "^16.2.6",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
   },
   "devDependencies": {
-    "@types/node": "^24.10.4",
-    "@types/react": "^19.2.7",
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "typescript": "~5.9.3"
+    "typescript": "^6.0.3"
   }
 }
