@@ -5,34 +5,38 @@ import { type Locale, LOCALES } from "../types";
 import { Card } from "./Card";
 import { Switcher } from "./Switcher";
 
-const KEY = "canopy-i18n-example-locale";
+const KEY = "canopy-i18n-example-auto";
 const listeners = new Set<() => void>();
 
-function getStoredLocale(): Locale | undefined {
+function detectFromNavigator(): Locale | undefined {
+  const lang = navigator.language.toLowerCase();
+  return LOCALES.find((loc) => lang.startsWith(loc));
+}
+
+function getStored(): Locale | undefined {
   const v = localStorage.getItem(KEY);
   return v && (LOCALES as readonly string[]).includes(v)
     ? (v as Locale)
     : undefined;
 }
 
-function subscribeStore(callback: () => void) {
+function subscribe(callback: () => void) {
   listeners.add(callback);
-  const onStorage = (e: StorageEvent) => {
-    if (e.key === KEY) callback();
-  };
-  window.addEventListener("storage", onStorage);
   return () => {
     listeners.delete(callback);
-    window.removeEventListener("storage", onStorage);
   };
 }
 
-function useStorageLocale(): Locale | undefined {
-  return useSyncExternalStore(subscribeStore, getStoredLocale, () => undefined);
+function useDetectedLocale(): Locale | undefined {
+  return useSyncExternalStore(
+    subscribe,
+    () => getStored() ?? detectFromNavigator(),
+    () => undefined,
+  );
 }
 
 const { LocaleProvider, useLocale, useBindLocale } = createI18nReact(LOCALES, {
-  useLocaleSource: useStorageLocale,
+  useLocaleSource: useDetectedLocale,
   onLocaleChange: (locale) => {
     localStorage.setItem(KEY, locale);
     listeners.forEach((l) => l());
@@ -47,17 +51,17 @@ function Inner() {
       <Switcher locale={locale} setLocale={setLocale} />
       <p style={{ margin: 0 }}>{m.base.welcome()}</p>
       <small style={{ color: "#888" }}>
-        localStorage に保存されるのでリロード後も保持される
+        navigator.language: <code>{navigator.language}</code>
       </small>
     </>
   );
 }
 
-export function StorageDemo() {
+export function AutoDetectDemo() {
   return (
     <Card
-      title="3. localStorage"
-      description="useLocaleSource で localStorage を購読し、onLocaleChange で書き戻す。"
+      title="4. navigator.language → localStorage"
+      description="useLocaleSource を localStorage ?? navigator.language の合成にし、選択を localStorage に永続化。"
     >
       <LocaleProvider>
         <Inner />

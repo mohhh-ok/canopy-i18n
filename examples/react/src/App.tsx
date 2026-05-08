@@ -1,7 +1,7 @@
-import { ControlledDemo } from "./patterns/ControlledDemo";
+import { AutoDetectDemo } from "./patterns/AutoDetectDemo";
 import { HashDemo } from "./patterns/HashDemo";
+import { SearchParamDemo } from "./patterns/SearchParamDemo";
 import { StorageDemo } from "./patterns/StorageDemo";
-import { UncontrolledDemo } from "./patterns/UncontrolledDemo";
 
 export default function App() {
   return (
@@ -15,9 +15,12 @@ export default function App() {
       }}
     >
       <header style={{ marginBottom: "24px" }}>
-        <h1 style={{ margin: "0 0 6px 0" }}>Canopy i18n — Locale Patterns</h1>
+        <h1 style={{ margin: "0 0 6px 0" }}>
+          Canopy i18n — Factory <code>useLocaleSource</code> Patterns
+        </h1>
         <p style={{ margin: 0, color: "#666" }}>
-          createI18nReact で作れる locale state の管理パターン集
+          createI18nReact の factory option <code>useLocaleSource</code>{" "}
+          をどんなソースに繋ぐかのパターン集
         </p>
       </header>
       <div
@@ -27,10 +30,10 @@ export default function App() {
           gap: "16px",
         }}
       >
-        <UncontrolledDemo />
-        <ControlledDemo />
         <HashDemo />
+        <SearchParamDemo />
         <StorageDemo />
+        <AutoDetectDemo />
       </div>
     </div>
   );

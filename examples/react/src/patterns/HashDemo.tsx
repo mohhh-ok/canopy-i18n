@@ -45,7 +45,7 @@ function Inner() {
 export function HashDemo() {
   return (
     <Card
-      title="3. Source-driven (URL hash)"
+      title="1. URL hash"
       description="useLocaleSource で URL ハッシュを購読し、setLocale でハッシュを書き換える。"
     >
       <LocaleProvider>
