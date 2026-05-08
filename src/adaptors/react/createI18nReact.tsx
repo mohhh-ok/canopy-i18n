@@ -43,10 +43,16 @@ export interface LocaleContextValue<Locale extends string> {
   setLocale: (locale: Locale) => void;
 }
 
-export interface LocaleProviderProps<Locale extends string> {
-  defaultLocale: Locale;
-  children: ReactNode;
-}
+export type LocaleProviderProps<Locale extends string> =
+  & { children: ReactNode }
+  & (
+    | { defaultLocale: Locale; locale?: undefined; onLocaleChange?: undefined }
+    | {
+      locale: Locale;
+      onLocaleChange: (locale: Locale) => void;
+      defaultLocale?: undefined;
+    }
+  );
 
 export function createI18nReact<const L extends readonly string[]>(
   locales: L,
@@ -55,13 +61,26 @@ export function createI18nReact<const L extends readonly string[]>(
     undefined,
   );
 
-  function LocaleProvider(
-    { defaultLocale, children }: LocaleProviderProps<L[number]>,
-  ) {
-    const [locale, setLocale] = useState<L[number]>(defaultLocale);
+  function LocaleProvider(props: LocaleProviderProps<L[number]>) {
+    const { children } = props;
+    const isControlled = props.locale !== undefined;
+    const [internalLocale, setInternalLocale] = useState<L[number]>(
+      (props.defaultLocale ?? props.locale)!,
+    );
+
+    const locale = isControlled ? props.locale! : internalLocale;
+    const setLocale = (next: L[number]) => {
+      if (isControlled) {
+        props.onLocaleChange!(next);
+      } else {
+        setInternalLocale(next);
+      }
+    };
+
     const value = useMemo<LocaleContextValue<L[number]>>(
       () => ({ locale, setLocale }),
-      [locale],
+      // controlled では onLocaleChange の参照変化にも追従する
+      [locale, isControlled, isControlled ? props.onLocaleChange : null],
     );
     return <Context.Provider value={value}>{children}</Context.Provider>;
   }

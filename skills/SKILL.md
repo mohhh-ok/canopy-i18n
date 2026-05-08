@@ -336,7 +336,9 @@ export const appI18n = i18n({
 
 ### Provider
 
-`defaultLocale` is required and must be one of `LOCALES`. Locale state is in-memory only — there is no built-in persistence.
+`LocaleProvider` supports two modes:
+
+**Uncontrolled (default).** Locale state is in-memory only — there is no built-in persistence.
 
 ```tsx
 // main.tsx
@@ -346,6 +348,16 @@ import { LocaleProvider } from './i18n';
   <App />
 </LocaleProvider>
 ```
+
+**Controlled.** Pass `locale` and `onLocaleChange` to integrate with URL routing, cookies, or external state. `setLocale` returned from `useLocale()` will call `onLocaleChange` instead of mutating internal state.
+
+```tsx
+<LocaleProvider locale={currentLocale} onLocaleChange={setCurrentLocale}>
+  <App />
+</LocaleProvider>
+```
+
+Use uncontrolled for simple apps. Use controlled when the locale lives outside React (URL segments like `/[locale]/...`, cookies, etc.).
 
 ### Components
 
@@ -417,7 +429,7 @@ export function ProfileCard({ name }: { name: string }) {
 const {
   locales,         // the LOCALES tuple
   i18n,            // function: i18n(entries) → ChainBuilder bound to LOCALES
-  LocaleProvider,  // requires defaultLocale: Locale
+  LocaleProvider,  // uncontrolled (defaultLocale) or controlled (locale + onLocaleChange)
   useLocale,       // () => { locale, setLocale }
   useBindLocale,   // memoized bindLocale, locale type-checked
 } = createI18nReact(['en', 'ja'] as const);

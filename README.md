@@ -376,6 +376,17 @@ import { LocaleProvider } from './i18n';
 </LocaleProvider>
 ```
 
+`LocaleProvider` also supports a controlled mode for integrating with URL routing, cookies, or external state:
+
+```tsx
+// Controlled mode: locale is owned by the parent
+<LocaleProvider locale={currentLocale} onLocaleChange={setCurrentLocale}>
+  <App />
+</LocaleProvider>
+```
+
+In controlled mode, `setLocale` from `useLocale()` calls your `onLocaleChange` handler instead of mutating internal state.
+
 ```tsx
 // App.tsx
 import { appI18n, useBindLocale, useLocale } from './i18n';
@@ -402,7 +413,7 @@ function App() {
 const {
   locales,         // the LOCALES tuple you passed in
   i18n,            // function: i18n(entries) → ChainBuilder bound to LOCALES
-  LocaleProvider,  // <LocaleProvider defaultLocale="en">
+  LocaleProvider,  // uncontrolled or controlled (see above)
   useLocale,       // () => { locale, setLocale }
   useBindLocale,   // memoized bindLocale, locale type-checked
 } = createI18nReact(['en', 'ja'] as const);
@@ -412,7 +423,7 @@ const {
 
 - `useBindLocale(msgsDef)` is memoized per `(msgsDef, locale)` pair.
 - The `Locale` type is derived from the `LOCALES` tuple. Passing a `ChainBuilder` whose locales differ from the Provider's locales is rejected at compile time.
-- No persistence: locale lives in React state only. Wire `localStorage` / URL / cookies yourself if you need it.
+- No built-in persistence. Use uncontrolled mode for in-memory state, or controlled mode to wire `localStorage` / URL / cookies / a router.
 - React is a `peerDependency` (`>=18`). Non-React users can ignore the `/react` subpath entirely.
 
 ## Repository
