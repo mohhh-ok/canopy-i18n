@@ -1,20 +1,24 @@
-import { type ReactElement, useState } from "react";
+import type { ReactElement } from "react";
 import { AutoDetectDemo } from "./patterns/autoDetect/Demo";
 import { HashDemo } from "./patterns/hash/Demo";
 import { SearchParamDemo } from "./patterns/searchParam/Demo";
 import { StorageDemo } from "./patterns/storage/Demo";
+import { Link, useCurrentPath } from "./shared/router";
 
-const TABS: ReadonlyArray<{ key: string; label: string; demo: ReactElement }> =
-  [
-    { key: "hash", label: "URL hash", demo: <HashDemo /> },
-    { key: "search", label: "URL search", demo: <SearchParamDemo /> },
-    { key: "storage", label: "localStorage", demo: <StorageDemo /> },
-    { key: "auto", label: "Auto detect", demo: <AutoDetectDemo /> },
-  ];
+const ROUTES: ReadonlyArray<{
+  path: string;
+  label: string;
+  demo: ReactElement;
+}> = [
+  { path: "/hash", label: "URL hash", demo: <HashDemo /> },
+  { path: "/search", label: "URL search", demo: <SearchParamDemo /> },
+  { path: "/storage", label: "localStorage", demo: <StorageDemo /> },
+  { path: "/auto", label: "Auto detect", demo: <AutoDetectDemo /> },
+];
 
 export default function App() {
-  const [active, setActive] = useState(TABS[0]!.key);
-  const current = TABS.find((t) => t.key === active) ?? TABS[0]!;
+  const path = useCurrentPath();
+  const current = ROUTES.find((r) => r.path === path) ?? ROUTES[0]!;
 
   return (
     <div
@@ -44,31 +48,11 @@ export default function App() {
           marginBottom: "20px",
         }}
       >
-        {TABS.map((t) => {
-          const isActive = t.key === active;
-          return (
-            <button
-              key={t.key}
-              type="button"
-              onClick={() => setActive(t.key)}
-              style={{
-                padding: "10px 16px",
-                fontSize: "14px",
-                background: "transparent",
-                border: "none",
-                borderBottom: isActive
-                  ? "2px solid #007bff"
-                  : "2px solid transparent",
-                color: isActive ? "#007bff" : "#555",
-                fontWeight: isActive ? 600 : 400,
-                cursor: "pointer",
-                marginBottom: "-1px",
-              }}
-            >
-              {t.label}
-            </button>
-          );
-        })}
+        {ROUTES.map((r) => (
+          <Link key={r.path} to={r.path} active={r.path === current.path}>
+            {r.label}
+          </Link>
+        ))}
       </nav>
 
       {current.demo}
