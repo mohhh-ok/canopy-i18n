@@ -53,12 +53,12 @@
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.9",
-    "@types/node": "^25.7.0",
-    "@types/react": "^19.2.14",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.15",
     "next": "16",
     "react": "^19.2.6",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.7"
   },
   "keywords": [
     "i18n",
