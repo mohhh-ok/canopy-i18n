@@ -1,6 +1,6 @@
 {
   "name": "canopy-i18n",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "The Type-Safe i18n library that your IDE will Love",
   "type": "module",
   "main": "dist/index.js",
@@ -49,7 +49,7 @@
     "type-check": "tsc -p . --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "_publish": "npm publish && git push --follow-tags && gh release create \"$(node -p \"require('./package.json').version\")\" --generate-notes"
+    "release": "GITHUB_TOKEN=\"$(gh auth token)\" node ./node_modules/release-it/bin/release-it.js"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.9",
@@ -57,6 +57,7 @@
     "@types/react": "^19.2.15",
     "next": "16",
     "react": "^19.2.6",
+    "release-it": "^19.2.4",
     "typescript": "^6.0.3",
     "vitest": "^4.1.7"
   },

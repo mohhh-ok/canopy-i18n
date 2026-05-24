@@ -12,8 +12,6 @@
     "test:e2e": "bun run --filter @repo/react test:e2e",
     "test": "bun run build && bun run test:unit && bun run test:e2e",
     "type-check": "bun run --filter '*' type-check",
-    "release:patch": "bun run test && npm version patch -w canopy-i18n --workspaces-update=false && bun run --filter canopy-i18n _publish",
-    "release:minor": "bun run test && npm version minor -w canopy-i18n --workspaces-update=false && bun run --filter canopy-i18n _publish",
-    "release:major": "bun run test && npm version major -w canopy-i18n --workspaces-update=false && bun run --filter canopy-i18n _publish"
+    "release": "cd packages/canopy-i18n && bun run release"
   }
 }
