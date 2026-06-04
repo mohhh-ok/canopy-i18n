@@ -1,6 +1,6 @@
 # AI Translation Example
 
-Minimal example of `canopy-i18n/unstable_ai`:
+Minimal example of `canopy-i18n/ai`:
 
 1. Write messages in the source locale only and let AI fill in the rest (`completeEntries`)
 2. Translate dynamic text (e.g. user input) at runtime with caching (`translate`)

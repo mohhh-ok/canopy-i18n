@@ -1,6 +1,6 @@
 import { createI18n } from "canopy-i18n";
-import { createAITranslator, memoryCache, openAIAdapter } from "canopy-i18n/unstable_ai";
-import type { AIAdapter } from "canopy-i18n/unstable_ai";
+import { createAITranslator, memoryCache, openAIAdapter } from "canopy-i18n/ai";
+import type { AIAdapter } from "canopy-i18n/ai";
 
 const apiKey = process.env.OPENAI_API_KEY;
 if (!apiKey) {

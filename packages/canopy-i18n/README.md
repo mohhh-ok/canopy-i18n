@@ -226,12 +226,12 @@ const {
 - `createI18nReact` itself has no built-in persistence. Use a built-in wrapper (`createHash/Search/Pathname/Storage/CookieI18nReact`) for common sources, or pass your own `useLocaleSource` / `onLocaleChange` for anything else.
 - React is a `peerDependency` (`>=18`). Non-React users can ignore the `/react` subpath entirely.
 
-## AI Translation (unstable)
+## AI Translation
 
-The `canopy-i18n/unstable_ai` subpath provides a runtime translator built around a pluggable adapter. Bring any AI backend by implementing a single `translate` function.
+The `canopy-i18n/ai` subpath provides a runtime translator built around a pluggable adapter. Bring any AI backend by implementing a single `translate` function.
 
 ```ts
-import { createAITranslator, memoryCache } from 'canopy-i18n/unstable_ai';
+import { createAITranslator, memoryCache } from 'canopy-i18n/ai';
 
 const translator = createAITranslator({
   // Implement AIAdapter with any provider (OpenAI, local model, ...)
@@ -257,7 +257,7 @@ import {
   openAIAdapter,
   anthropicAdapter,
   geminiAdapter,
-} from 'canopy-i18n/unstable_ai';
+} from 'canopy-i18n/ai';
 
 const adapter = openAIAdapter({
   model: 'gpt-4o-mini',
@@ -291,7 +291,7 @@ const translator = createAITranslator({
 The prompt logic used by the built-in adapter is exported, so custom adapters can reuse it instead of writing their own:
 
 ```ts
-import { buildTranslatePrompt, parseTranslatedTexts } from 'canopy-i18n/unstable_ai';
+import { buildTranslatePrompt, parseTranslatedTexts } from 'canopy-i18n/ai';
 
 const adapter = {
   async translate(request) {

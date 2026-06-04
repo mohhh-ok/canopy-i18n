@@ -225,12 +225,12 @@ React is a `peerDependency` (`>=18`).
 
 ---
 
-## AI Translation (unstable)
+## AI Translation
 
-`canopy-i18n/unstable_ai` provides a runtime translator with a pluggable adapter (bring any AI backend). Static strings only — template functions are not translated. See README for details.
+`canopy-i18n/ai` provides a runtime translator with a pluggable adapter (bring any AI backend). Static strings only — template functions are not translated. See README for details.
 
 ```ts
-import { createAITranslator, memoryCache, openAIAdapter } from 'canopy-i18n/unstable_ai';
+import { createAITranslator, memoryCache, openAIAdapter } from 'canopy-i18n/ai';
 
 const translator = createAITranslator({
   // Built-in adapters: openAIAdapter / anthropicAdapter / geminiAdapter
@@ -278,9 +278,9 @@ export {
   createCookieI18nReact,
 } from 'canopy-i18n/react';
 
-// AI subpath (unstable)
-export { createAITranslator, AITranslator, memoryCache } from 'canopy-i18n/unstable_ai';
-export { openAIAdapter, anthropicAdapter, geminiAdapter } from 'canopy-i18n/unstable_ai';
-export { buildTranslatePrompt, parseTranslatedTexts } from 'canopy-i18n/unstable_ai';
-export type { AIAdapter, TranslationCache } from 'canopy-i18n/unstable_ai';
+// AI subpath
+export { createAITranslator, AITranslator, memoryCache } from 'canopy-i18n/ai';
+export { openAIAdapter, anthropicAdapter, geminiAdapter } from 'canopy-i18n/ai';
+export { buildTranslatePrompt, parseTranslatedTexts } from 'canopy-i18n/ai';
+export type { AIAdapter, TranslationCache } from 'canopy-i18n/ai';
 ```
