@@ -1,5 +1,6 @@
 import { createI18n } from "canopy-i18n";
 import { createAITranslator, memoryCache, openAIAdapter } from "canopy-i18n/unstable_ai";
+import type { AIAdapter } from "canopy-i18n/unstable_ai";
 
 const apiKey = process.env.OPENAI_API_KEY;
 if (!apiKey) {
@@ -7,8 +8,19 @@ if (!apiKey) {
   process.exit(1);
 }
 
+// Wrap the adapter to log API calls, so cache hits are visible (no log = cached)
+const openai = openAIAdapter({ model: "gpt-4o-mini", apiKey });
+let apiCalls = 0;
+const adapter: AIAdapter = {
+  async translate(request) {
+    apiCalls += 1;
+    console.log(`  (API call #${apiCalls}: ${request.texts.length} text(s) -> ${request.to})`);
+    return openai.translate(request);
+  },
+};
+
 const translator = createAITranslator({
-  adapter: openAIAdapter({ model: "gpt-4o-mini", apiKey }),
+  adapter,
   sourceLocale: "ja",
   cache: memoryCache(),
 });
@@ -29,7 +41,11 @@ console.log(messages.cancel()); // "Cancel" (kept)
 
 // 2. Translate dynamic text (e.g. user input) at runtime
 const input = process.argv[2] ?? "こんにちは、世界！";
+
+console.log("1st translate:");
 console.log(await translator.translate(input, { to: "en" }));
 
-// Cached: the same text does not call the API again
+console.log("2nd translate (cached — no API call below):");
 console.log(await translator.translate(input, { to: "en" }));
+
+console.log(`total API calls: ${apiCalls}`);
