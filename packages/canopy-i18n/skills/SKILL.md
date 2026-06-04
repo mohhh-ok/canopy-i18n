@@ -230,15 +230,20 @@ React is a `peerDependency` (`>=18`).
 `canopy-i18n/unstable_ai` provides a runtime translator with a pluggable adapter (bring any AI backend). Static strings only — template functions are not translated. See README for details.
 
 ```ts
-import { createAITranslator, memoryCache } from 'canopy-i18n/unstable_ai';
+import { createAITranslator, memoryCache, openAIAdapter } from 'canopy-i18n/unstable_ai';
 
 const translator = createAITranslator({
-  // `from` is undefined when the source language is unknown — auto-detect it
-  adapter: { async translate({ texts, from, to }) { return await callYourAI(texts, from, to); } },
+  // Built-in OpenAI adapter (fetch-based; baseURL works with OpenAI-compatible APIs).
+  // Or implement AIAdapter yourself: { async translate({ texts, from, to }) {...} }
+  // (`from` is undefined when the source language is unknown — auto-detect it)
+  adapter: openAIAdapter({ model: 'gpt-4o-mini', apiKey: process.env.OPENAI_API_KEY! }),
   sourceLocale: 'ja',       // default `from` (optional; required for completeEntries)
   cache: memoryCache(),     // optional; custom { get, set } for DB persistence
   // onError: 'fallback'    // default: return original text on failure ('throw' to propagate)
 });
+
+// Custom adapters can reuse the built-in prompt logic:
+// buildTranslatePrompt(request, { instructions }) / parseTranslatedTexts(raw, expected)
 
 // Dynamic texts (e.g. user input) — cached, deduplicated, batched
 await translator.translate(userInput, { to: 'en' });          // from = sourceLocale
@@ -273,6 +278,7 @@ export {
 } from 'canopy-i18n/react';
 
 // AI subpath (unstable)
-export { createAITranslator, AITranslator, memoryCache } from 'canopy-i18n/unstable_ai';
+export { createAITranslator, AITranslator, memoryCache, openAIAdapter } from 'canopy-i18n/unstable_ai';
+export { buildTranslatePrompt, parseTranslatedTexts } from 'canopy-i18n/unstable_ai';
 export type { AIAdapter, TranslationCache } from 'canopy-i18n/unstable_ai';
 ```

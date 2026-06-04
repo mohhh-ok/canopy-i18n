@@ -246,6 +246,42 @@ const translator = createAITranslator({
 });
 ```
 
+### Built-in OpenAI adapter
+
+A ready-made adapter for the OpenAI Chat Completions API (fetch-based, no SDK dependency). `baseURL` lets it talk to any OpenAI-compatible API (Ollama, etc.).
+
+```ts
+import { createAITranslator, memoryCache, openAIAdapter } from 'canopy-i18n/unstable_ai';
+
+const translator = createAITranslator({
+  adapter: openAIAdapter({
+    model: 'gpt-4o-mini',                    // required
+    apiKey: process.env.OPENAI_API_KEY!,     // required
+    // baseURL: 'http://localhost:11434/v1', // OpenAI-compatible APIs
+    // instructions: 'Do not translate the product name "Canopy".',
+  }),
+  sourceLocale: 'ja',
+  cache: memoryCache(),
+});
+```
+
+### Prompt helpers
+
+The prompt logic used by the built-in adapter is exported, so custom adapters can reuse it instead of writing their own:
+
+```ts
+import { buildTranslatePrompt, parseTranslatedTexts } from 'canopy-i18n/unstable_ai';
+
+const adapter = {
+  async translate(request) {
+    const prompt = buildTranslatePrompt(request, { instructions: 'Keep it casual.' });
+    const raw = await callYourAI(prompt);
+    // strips code fences / surrounding text, validates order & length
+    return parseTranslatedTexts(raw, request.texts.length);
+  },
+};
+```
+
 ### Translating dynamic texts (e.g. user input)
 
 ```ts
