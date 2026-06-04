@@ -233,7 +233,8 @@ React is a `peerDependency` (`>=18`).
 import { createAITranslator, memoryCache, openAIAdapter } from 'canopy-i18n/unstable_ai';
 
 const translator = createAITranslator({
-  // Built-in OpenAI adapter (fetch-based; baseURL works with OpenAI-compatible APIs).
+  // Built-in adapters: openAIAdapter / anthropicAdapter / geminiAdapter
+  // (fetch-based; model & apiKey required; baseURL/instructions optional).
   // Or implement AIAdapter yourself: { async translate({ texts, from, to }) {...} }
   // (`from` is undefined when the source language is unknown — auto-detect it)
   adapter: openAIAdapter({ model: 'gpt-4o-mini', apiKey: process.env.OPENAI_API_KEY! }),
@@ -278,7 +279,8 @@ export {
 } from 'canopy-i18n/react';
 
 // AI subpath (unstable)
-export { createAITranslator, AITranslator, memoryCache, openAIAdapter } from 'canopy-i18n/unstable_ai';
+export { createAITranslator, AITranslator, memoryCache } from 'canopy-i18n/unstable_ai';
+export { openAIAdapter, anthropicAdapter, geminiAdapter } from 'canopy-i18n/unstable_ai';
 export { buildTranslatePrompt, parseTranslatedTexts } from 'canopy-i18n/unstable_ai';
 export type { AIAdapter, TranslationCache } from 'canopy-i18n/unstable_ai';
 ```

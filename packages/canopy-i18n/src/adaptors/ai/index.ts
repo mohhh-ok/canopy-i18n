@@ -1,4 +1,8 @@
+export { anthropicAdapter } from "./anthropic.js";
+export type { AnthropicAdapterOptions } from "./anthropic.js";
 export { memoryCache } from "./cache.js";
+export { geminiAdapter } from "./gemini.js";
+export type { GeminiAdapterOptions } from "./gemini.js";
 export { openAIAdapter } from "./openai.js";
 export type { OpenAIAdapterOptions } from "./openai.js";
 export { buildTranslatePrompt, parseTranslatedTexts } from "./prompt.js";

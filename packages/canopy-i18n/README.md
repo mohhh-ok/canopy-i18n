@@ -246,20 +246,41 @@ const translator = createAITranslator({
 });
 ```
 
-### Built-in OpenAI adapter
+### Built-in adapters
 
-A ready-made adapter for the OpenAI Chat Completions API (fetch-based, no SDK dependency). `baseURL` lets it talk to any OpenAI-compatible API (Ollama, etc.).
+Ready-made adapters for OpenAI, Anthropic (Claude), and Google Gemini. All are fetch-based with no SDK dependency. `model` and `apiKey` are required; `instructions` and `baseURL` are optional.
 
 ```ts
-import { createAITranslator, memoryCache, openAIAdapter } from 'canopy-i18n/unstable_ai';
+import {
+  createAITranslator,
+  memoryCache,
+  openAIAdapter,
+  anthropicAdapter,
+  geminiAdapter,
+} from 'canopy-i18n/unstable_ai';
+
+const adapter = openAIAdapter({
+  model: 'gpt-4o-mini',
+  apiKey: process.env.OPENAI_API_KEY!,
+  // baseURL: 'http://localhost:11434/v1', // any OpenAI-compatible API (Ollama, etc.)
+  // instructions: 'Do not translate the product name "Canopy".',
+});
+
+// or
+anthropicAdapter({
+  model: 'claude-haiku-4-5',
+  apiKey: process.env.ANTHROPIC_API_KEY!,
+  // maxTokens: 8192, // the Anthropic API requires max_tokens; this is the default
+});
+
+// or
+geminiAdapter({
+  model: 'gemini-2.0-flash',
+  apiKey: process.env.GEMINI_API_KEY!,
+});
 
 const translator = createAITranslator({
-  adapter: openAIAdapter({
-    model: 'gpt-4o-mini',                    // required
-    apiKey: process.env.OPENAI_API_KEY!,     // required
-    // baseURL: 'http://localhost:11434/v1', // OpenAI-compatible APIs
-    // instructions: 'Do not translate the product name "Canopy".',
-  }),
+  adapter,
   sourceLocale: 'ja',
   cache: memoryCache(),
 });
