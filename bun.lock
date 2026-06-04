@@ -5,6 +5,17 @@
     "": {
       "name": "@repo/root",
     },
+    "examples/ai": {
+      "name": "@repo/ai",
+      "version": "0.0.0",
+      "dependencies": {
+        "canopy-i18n": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/node": "^25.9.1",
+        "typescript": "^6.0.3",
+      },
+    },
     "examples/next": {
       "name": "@repo/next",
       "version": "0.0.0",
@@ -47,7 +58,7 @@
     },
     "packages/canopy-i18n": {
       "name": "canopy-i18n",
-      "version": "0.8.2",
+      "version": "0.8.3",
       "devDependencies": {
         "@tsconfig/node20": "^20.1.9",
         "@types/node": "^25.9.1",
@@ -326,6 +337,8 @@
     "@phun-ky/typeof": ["@phun-ky/typeof@2.0.3", "", {}, "sha512-oeQJs1aa8Ghke8JIK9yuq/+KjMiaYeDZ38jx7MhkXncXlUKjqQ3wEm2X3qCKyjo+ZZofZj+WsEEiqkTtRuE2xQ=="],
 
     "@playwright/test": ["@playwright/test@1.60.0", "", { "dependencies": { "playwright": "1.60.0" }, "bin": { "playwright": "cli.js" } }, "sha512-O71yZIbAh/PxDMNGns37GHBIfrVkEVyn+AXyIa5dOTfb4/xNvRWV+Vv/NMbNCtODB/pO7vLlF2OTmMVLhmr7Ag=="],
+
+    "@repo/ai": ["@repo/ai@workspace:examples/ai"],
 
     "@repo/next": ["@repo/next@workspace:examples/next"],
 
