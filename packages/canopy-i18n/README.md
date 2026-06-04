@@ -226,6 +226,84 @@ const {
 - `createI18nReact` itself has no built-in persistence. Use a built-in wrapper (`createHash/Search/Pathname/Storage/CookieI18nReact`) for common sources, or pass your own `useLocaleSource` / `onLocaleChange` for anything else.
 - React is a `peerDependency` (`>=18`). Non-React users can ignore the `/react` subpath entirely.
 
+## AI Translation (unstable)
+
+The `canopy-i18n/unstable_ai` subpath provides a runtime translator built around a pluggable adapter. Bring any AI backend by implementing a single `translate` function.
+
+```ts
+import { createAITranslator, memoryCache } from 'canopy-i18n/unstable_ai';
+
+const translator = createAITranslator({
+  // Implement AIAdapter with any provider (OpenAI, local model, ...)
+  adapter: {
+    async translate({ texts, from, to }) {
+      const translated = await callYourAI(texts, from, to);
+      return translated; // same order and length as texts
+    },
+  },
+  sourceLocale: 'ja',
+  cache: memoryCache(), // optional; implement TranslationCache for DB persistence
+});
+```
+
+### Translating dynamic texts (e.g. user input)
+
+```ts
+const translated = await translator.translate(userComment, { to: 'en' });
+const many = await translator.translateMany(['こんにちは', 'さようなら'], { to: 'en' });
+
+// Source language unknown? Omit both sourceLocale and `from` —
+// the adapter receives `from: undefined` and should auto-detect.
+const detected = await translator.translate(anyLanguageInput, { to: 'ja' });
+```
+
+- `from` falls back to `sourceLocale`; if neither is set, the adapter auto-detects.
+- Results are cached (`cache` option), so the same text is translated only once.
+- Concurrent requests for the same text are deduplicated into a single adapter call.
+- `translateMany` batches all texts into one adapter call.
+- On adapter failure the original text is returned by default (`onError: 'fallback'`). Set `onError: 'throw'` to propagate errors.
+
+### Completing message entries
+
+Write only the source locale and let AI fill in the rest. The result is a complete entries object for `ChainBuilder.add()`:
+
+```ts
+const entries = await translator.completeEntries(['ja', 'en', 'fr'] as const, {
+  title: { ja: 'タイトル' },                      // en & fr are AI-translated
+  greeting: { ja: 'こんにちは', en: 'Hello' },     // existing en is kept, fr is AI-translated
+});
+
+const messages = createI18n(['ja', 'en', 'fr'] as const)
+  .add(entries)
+  .build('en');
+```
+
+Only static string entries are supported; template functions are out of scope for AI translation.
+
+### Interfaces
+
+```ts
+interface AIAdapter {
+  // `from` is undefined when the source language is unknown — auto-detect it
+  translate(request: { texts: string[]; from?: string; to: string }): Promise<string[]>;
+}
+
+interface TranslationCache {
+  get(key: string): Promise<string | undefined> | string | undefined;
+  set(key: string, value: string): Promise<void> | void;
+}
+```
+
+```ts
+createAITranslator({
+  adapter,             // AIAdapter (required)
+  sourceLocale: 'ja',  // default `from` (optional; required for completeEntries)
+  cache,               // TranslationCache (optional)
+  onError: 'fallback', // 'fallback' (default) | 'throw'
+  cacheKey,            // (text, from, to) => string (optional)
+});
+```
+
 ## API
 
 ### `createI18n(locales)`

@@ -225,6 +225,35 @@ React is a `peerDependency` (`>=18`).
 
 ---
 
+## AI Translation (unstable)
+
+`canopy-i18n/unstable_ai` provides a runtime translator with a pluggable adapter (bring any AI backend). Static strings only — template functions are not translated. See README for details.
+
+```ts
+import { createAITranslator, memoryCache } from 'canopy-i18n/unstable_ai';
+
+const translator = createAITranslator({
+  // `from` is undefined when the source language is unknown — auto-detect it
+  adapter: { async translate({ texts, from, to }) { return await callYourAI(texts, from, to); } },
+  sourceLocale: 'ja',       // default `from` (optional; required for completeEntries)
+  cache: memoryCache(),     // optional; custom { get, set } for DB persistence
+  // onError: 'fallback'    // default: return original text on failure ('throw' to propagate)
+});
+
+// Dynamic texts (e.g. user input) — cached, deduplicated, batched
+await translator.translate(userInput, { to: 'en' });          // from = sourceLocale
+await translator.translate(userInput, { to: 'en', from: 'fr' });
+// Without sourceLocale and `from`, the adapter auto-detects the source language
+
+// Fill missing locales of entries, then pass to ChainBuilder.add()
+const entries = await translator.completeEntries(['ja', 'en'] as const, {
+  title: { ja: 'タイトル' },  // en is AI-translated; existing values are kept
+});
+const messages = createI18n(['ja', 'en'] as const).add(entries).build('en');
+```
+
+---
+
 ## Exports
 
 ```ts
@@ -242,4 +271,8 @@ export {
   createStorageI18nReact,
   createCookieI18nReact,
 } from 'canopy-i18n/react';
+
+// AI subpath (unstable)
+export { createAITranslator, AITranslator, memoryCache } from 'canopy-i18n/unstable_ai';
+export type { AIAdapter, TranslationCache } from 'canopy-i18n/unstable_ai';
 ```

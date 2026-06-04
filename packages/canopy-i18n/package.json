@@ -20,6 +20,11 @@
       "types": "./dist/adaptors/next/index.d.ts",
       "import": "./dist/adaptors/next/index.js",
       "default": "./dist/adaptors/next/index.js"
+    },
+    "./unstable_ai": {
+      "types": "./dist/adaptors/ai/index.d.ts",
+      "import": "./dist/adaptors/ai/index.js",
+      "default": "./dist/adaptors/ai/index.js"
     }
   },
   "peerDependencies": {
