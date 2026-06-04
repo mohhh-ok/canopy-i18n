@@ -72,7 +72,12 @@
     "localization",
     "l10n",
     "messages",
-    "template"
+    "template",
+    "ai",
+    "translation",
+    "openai",
+    "claude",
+    "gemini"
   ],
   "engines": {
     "node": ">=20"

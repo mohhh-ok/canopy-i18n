@@ -1,8 +1,9 @@
 # canopy-i18n
 
-A tiny, type-safe i18n library for building localized messages with builder pattern and applying locales across nested data structures.
+A tiny, type-safe i18n library for building localized messages with builder pattern and applying locales across nested data structures — with optional AI translation for missing locales and runtime user input.
 
 ## Features
+- **AI translation**: Write only your source locale and let AI fill in the rest. Built-in OpenAI / Claude / Gemini adapters, runtime translation of user input with caching. See [AI Translation](#ai-translation).
 - **AI-friendly**: Full type safety and single-file colocation give AI assistants complete context for accurate code generation.
 - **Type-safe**: Compile-time safety for locale keys with full TypeScript IntelliSense support.
 - **Flexible templating**: Plain functions support any JavaScript logic, template literals, or formatting library.
@@ -10,6 +11,8 @@ A tiny, type-safe i18n library for building localized messages with builder patt
 - **React-ready**: Provider, hooks, and built-in source wrappers for URL hash / search param / pathname / localStorage / Cookie. See [React Integration](#react-integration).
 
 > **Using React?** Jump straight to [React Integration](#react-integration) — the Provider, hooks, and ready-made source wrappers cover most app setups out of the box.
+>
+> **Tired of writing every locale by hand?** See [AI Translation](#ai-translation) — write `ja` only and let AI complete the rest, or translate user input at runtime.
 ## Why Canopy i18n?
 
 Traditional i18n libraries require separate JSON files and string-based key lookups:
@@ -54,9 +57,32 @@ const messages = createI18n(['en', 'ja'] as const)
 console.log(messages.welcome({ name: 'Alice' }));  // "Welcome, Alice!"
 ```
 
+**With AI translation** — write only your source locale:
+```ts
+import { createAITranslator, openAIAdapter, memoryCache } from 'canopy-i18n/ai';
+
+const translator = createAITranslator({
+  adapter: openAIAdapter({ model: 'gpt-4o-mini', apiKey: process.env.OPENAI_API_KEY! }),
+  sourceLocale: 'ja',
+  cache: memoryCache(),
+});
+
+const messages = createI18n(['ja', 'en'] as const)
+  .add(await translator.completeEntries(['ja', 'en'] as const, {
+    greeting: { ja: 'こんにちは' },   // en is filled in by AI
+  }))
+  .build('en');
+
+console.log(messages.greeting());  // "Hello"
+
+// It also translates dynamic text (e.g. user input) at runtime, with caching
+await translator.translate(userComment, { to: 'en' });
+```
+
 **Benefits:**
 - 🔒 **Type safety**: Typos caught at compile time, full autocomplete support
 - 📁 **Colocation**: All translations in one place, no file jumping
+- 🤖 **AI translation**: Missing locales and user input translated by AI — OpenAI / Claude / Gemini or your own adapter
 - ⚡ **Zero config**: No loaders, plugins, or initialization required
 - 🚀 **Framework agnostic**: Works anywhere JavaScript runs
 
