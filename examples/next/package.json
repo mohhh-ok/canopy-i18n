@@ -10,9 +10,9 @@
   },
   "dependencies": {
     "canopy-i18n": "workspace:*",
-    "next": "^16.2.10",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "next": "^16.2.11",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@types/node": "^25.9.3",
